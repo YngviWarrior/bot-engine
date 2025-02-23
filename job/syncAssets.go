@@ -1,7 +1,6 @@
 package job
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -59,10 +58,10 @@ func (j *job) SyncAssets(loopChannel *chan bool) {
 			}
 		}
 	}
-	fmt.Println(updateValues)
-	updatedWallets := j.ExchangeMS.UpdateWallet(&pb.UpdateWalletRequest{
+
+	_ = j.ExchangeMS.UpdateWallet(&pb.UpdateWalletRequest{
 		Wallet: updateValues,
 	})
-	fmt.Println(updatedWallets)
+
 	<-*loopChannel
 }

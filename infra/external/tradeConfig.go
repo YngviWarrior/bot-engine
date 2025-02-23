@@ -18,3 +18,15 @@ func (i *external) ListTradeConfig() *pb.TradeConfigResponse {
 
 	return resp
 }
+
+func (i *external) UpdateTradeConfig(in *pb.UpdateTradeConfigRequest) (out *pb.UpdateTradeConfigResponse) {
+	client := pb.NewExchangeServiceClient(i.Conn)
+
+	out, err := client.UpdateTradeConfig(context.Background(), &pb.UpdateTradeConfigRequest{})
+
+	if err != nil {
+		log.Fatalln("E-LTG", err)
+	}
+
+	return
+}

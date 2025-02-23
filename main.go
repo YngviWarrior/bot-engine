@@ -38,8 +38,4 @@ func main() {
 	}
 
 	job.NewJobs().InitJobs()
-
-	// bot := botengine.NewBotEngine(bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("UMTsjsi9W4wZCURx5TIlHF3rgUlWJPiJhPT6")))
-
-	// bot.InitBotEngine()
 }
