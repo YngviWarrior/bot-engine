@@ -29,8 +29,16 @@ func (b *botengine) OperateAvgPriceDay(configs *pb.TradeConfig, wg *sync.WaitGro
 		Coin:     stableCoin,
 	})
 	fmt.Println(wallet)
-	// exchangeMS.
-	// 	list := operationRepo.List(tx, configs.User, int64(configs.Strategy), int64(configs.StrategyVariant), int64(configs.Parity), int64(configs.Exchange), false, true)
+	operations := exchangeMS.ListOperation(&pb.ListOperationRequest{
+		User:            uint64(configs.GetUser()),
+		Strategy:        uint64(configs.GetStrategy()),
+		StrategyVariant: uint64(configs.GetStrategyVariant()),
+		Parity:          uint64(configs.GetParity()),
+		Exchange:        uint64(configs.GetExchange()),
+		Closed:          false,
+		Enabled:         true,
+	})
+	fmt.Println(operations)
 	// currentPrice := candleRepo.FindLastPrice(tx, configs.Parity, configs.Exchange)
 	// avg := avgPriceRepo.FindByParityExchange(tx, configs.Parity, configs.Exchange)
 	// // log.Println("Open Operations: ", len(list))

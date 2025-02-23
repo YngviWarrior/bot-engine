@@ -9,7 +9,7 @@ import (
 )
 
 type BotEngine interface {
-	InitBotEngine()
+	InitBotEngine(loopChannel *chan bool)
 }
 
 type botengine struct {
@@ -22,10 +22,8 @@ func NewBotEngine(bybit bybitSDK.BybitServiceInterface) BotEngine {
 	}
 }
 
-func (b *botengine) InitBotEngine() {
-	externalRequest := external.NewExchangeExternal()
-	tradeConfigList := externalRequest.ListTradeConfig()
-
+func (b *botengine) InitBotEngine(loopChannel *chan bool) {
+	tradeConfigList := external.NewExchangeExternal().ListTradeConfig()
 	var wg sync.WaitGroup
 
 	var start time.Time
@@ -35,36 +33,38 @@ func (b *botengine) InitBotEngine() {
 		if configs.Enabled {
 			wg.Add(1)
 			switch configs.Exchange {
-			case BINANCE_EXCH:
-				if configs.Enabled {
-					switch configs.Modality {
-					case SPOT_MODALITY:
-						// go binancestrategies.BinanceOpenClose(*db, configs)
-					}
-				}
+			// case BINANCE_EXCH:
+			// 	if configs.Enabled {
+			// 		switch configs.Modality {
+			// 		case SPOT_MODALITY:
+			// 			// go binancestrategies.BinanceOpenClose(*db, configs)
+			// 		}
+			// 	}
 			case BYBIT_EXCH:
 				if configs.Enabled {
 					switch configs.Modality {
 					case SPOT_MODALITY:
-						switch configs.Strategy {
-						case AVERAGE_PRICE:
-							switch configs.StrategyVariant {
-							case AVERAGE_PRICE_DAY:
-								if configs.StrategyVariantEnabled {
-									go b.ByBitAvgPriceDay(configs, &wg)
+						if configs.StrategyEnabled {
+							switch configs.Strategy {
+							case AVERAGE_PRICE:
+								switch configs.StrategyVariant {
+								case AVERAGE_PRICE_DAY:
+									if configs.StrategyVariantEnabled {
+										go b.ByBitAvgPriceDay(configs, &wg)
+									}
+								case AVERAGE_PRICE_WEEK:
+									if configs.StrategyVariantEnabled {
+										// go b.ByBitAvgPriceWeek(configs, &wg)
+									}
 								}
-							case AVERAGE_PRICE_WEEK:
-								if configs.StrategyVariantEnabled {
-									// go b.ByBitAvgPriceWeek(configs, &wg)
+							case CLOSE_OPEN:
+								if configs.StrategyEnabled {
+									// go b.ByBitOpenClose(configs, &wg)
 								}
-							}
-						case CLOSE_OPEN:
-							if configs.StrategyEnabled {
-								// go b.ByBitOpenClose(configs, &wg)
-							}
-						case FAST_TRADE:
-							if configs.StrategyEnabled {
-								// go b.ByBitFastTrade(configs, &wg)
+							case FAST_TRADE:
+								if configs.StrategyEnabled {
+									// go b.ByBitFastTrade(configs, &wg)
+								}
 							}
 						}
 					}
