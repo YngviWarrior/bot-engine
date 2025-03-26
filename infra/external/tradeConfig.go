@@ -7,13 +7,25 @@ import (
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
 )
 
+func (i *external) GetTradeConfig(in *pb.GetTradeConfigRequest) *pb.GetTradeConfigResponse {
+	client := pb.NewExchangeServiceClient(i.Conn)
+
+	resp, err := client.GetTradeConfig(context.Background(), &pb.GetTradeConfigRequest{})
+
+	if err != nil {
+		log.Fatalln("E-GTC", err)
+	}
+
+	return resp
+}
+
 func (i *external) ListTradeConfig() *pb.TradeConfigResponse {
 	client := pb.NewExchangeServiceClient(i.Conn)
 
 	resp, err := client.ListTradeConfig(context.Background(), &pb.ListTradeConfigRequest{})
 
 	if err != nil {
-		log.Fatalln("E-LTG", err)
+		log.Fatalln("E-LTC", err)
 	}
 
 	return resp
@@ -25,7 +37,7 @@ func (i *external) UpdateTradeConfig(in *pb.UpdateTradeConfigRequest) (out *pb.U
 	out, err := client.UpdateTradeConfig(context.Background(), &pb.UpdateTradeConfigRequest{})
 
 	if err != nil {
-		log.Fatalln("E-LTG", err)
+		log.Fatalln("E-UTC", err)
 	}
 
 	return

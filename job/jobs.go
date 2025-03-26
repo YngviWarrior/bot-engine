@@ -1,18 +1,17 @@
 package job
 
 import (
-	"log"
 	"os"
 	"time"
 
 	"github.com/YngviWarrior/bot-engine/botengine"
 	"github.com/YngviWarrior/bot-engine/infra/external"
+	"github.com/YngviWarrior/bot-engine/infra/rabbitmq"
 	bybitSDK "github.com/YngviWarrior/bybit-sdk"
-	"github.com/rabbitmq/amqp091-go"
 )
 
 type job struct {
-	RabbitMQ   *amqp091.Connection
+	RabbitMQ   rabbitmq.RabbitMQInterface
 	ExchangeMS external.ExternalInterface
 }
 
@@ -23,19 +22,15 @@ type JobInterface interface {
 	SyncAssets(*chan bool)
 	SyncKlines()
 	ManageTradeConfigStrategy(*chan bool)
+	CalculateProfit()
 }
 
 func NewJobs() JobInterface {
 	exchangeMS := external.NewExchangeExternal()
-
-	conn, err := amqp091.Dial("amqp://guest:guest@localhost:5672/")
-	if err != nil {
-		log.Fatal("Erro ao conectar ao RabbitMQ:", err)
-	}
-	defer conn.Close()
+	rabbitmq := rabbitmq.NewRabbitMQConnection()
 
 	return &job{
-		RabbitMQ:   conn,
+		RabbitMQ:   rabbitmq,
 		ExchangeMS: exchangeMS,
 	}
 }
@@ -43,6 +38,15 @@ func NewJobs() JobInterface {
 func (j *job) InitJobs() {
 	go j.OpenLiveKline()
 	time.Sleep(time.Second * 5)
+
+	go func() {
+		loopChannel := make(chan bool)
+		j.OpenOperationManager(&loopChannel)
+
+		for <-loopChannel {
+			j.OpenOperationManager(&loopChannel)
+		}
+	}()
 
 	go func() {
 		loopChannel := make(chan bool)

@@ -16,6 +16,7 @@ type ExternalInterface interface {
 	ListUserStrategy() *pb.UserStrategyResponse
 	ListTradeConfig() *pb.TradeConfigResponse
 	UpdateTradeConfig(*pb.UpdateTradeConfigRequest) *pb.UpdateTradeConfigResponse
+	GetTradeConfig(*pb.GetTradeConfigRequest) *pb.GetTradeConfigResponse
 
 	GetWalletWithCoin(*pb.GetWalletWithCoinRequest) *pb.GetWalletWithCoinResponse
 	ListWalletWithCoin(*pb.ListWalletWithCoinRequest) *pb.ListWalletWithCoinResponse
@@ -32,6 +33,8 @@ type ExternalInterface interface {
 
 	ListOperation(*pb.ListOperationRequest) *pb.ListOperationResponse
 	ListOperationByPeriod(*pb.ListOperationByPeriodRequest) *pb.ListOperationByPeriodResponse
+	ListAllOperation(*pb.ListAllOperationRequest) *pb.ListAllOperationResponse
+	UpdateOperation(*pb.UpdateOperationRequest) *pb.UpdateOperationResponse
 }
 
 func NewUserExternal() ExternalInterface {

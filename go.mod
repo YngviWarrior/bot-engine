@@ -1,6 +1,6 @@
 module github.com/YngviWarrior/bot-engine
 
-go 1.23.4
+go 1.24
 
 require (
 	github.com/YngviWarrior/bybit-sdk v0.0.0-20250222193416-7f31dce3f861

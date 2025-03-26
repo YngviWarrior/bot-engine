@@ -7,18 +7,24 @@ import (
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
 )
 
+func (i *external) ListAllOperation(in *pb.ListAllOperationRequest) *pb.ListAllOperationResponse {
+	client := pb.NewExchangeServiceClient(i.Conn)
+	resp, err := client.ListAllOperation(context.Background(), in)
+	if err != nil {
+		log.Fatalln("E-LAO", err)
+	}
+	return resp
+}
+
 func (i *external) ListOperationByPeriod(in *pb.ListOperationByPeriodRequest) *pb.ListOperationByPeriodResponse {
 	client := pb.NewExchangeServiceClient(i.Conn)
-
 	resp, err := client.ListOperationByPeriod(context.Background(), &pb.ListOperationByPeriodRequest{
 		MtsStart: in.GetMtsStart(),
 		MtsEnd:   in.GetMtsEnd(),
 	})
-
 	if err != nil {
 		log.Fatalln("E-LOBP", err)
 	}
-
 	return resp
 }
 
@@ -34,6 +40,18 @@ func (i *external) ListOperation(in *pb.ListOperationRequest) *pb.ListOperationR
 		Closed:          in.GetClosed(),
 		Enabled:         in.GetEnabled(),
 	})
+
+	if err != nil {
+		log.Fatalln("E-LO", err)
+	}
+
+	return resp
+}
+
+func (i *external) UpdateOperation(in *pb.UpdateOperationRequest) *pb.UpdateOperationResponse {
+	client := pb.NewExchangeServiceClient(i.Conn)
+
+	resp, err := client.UpdateOperation(context.Background(), &pb.UpdateOperationRequest{})
 
 	if err != nil {
 		log.Fatalln("E-LO", err)

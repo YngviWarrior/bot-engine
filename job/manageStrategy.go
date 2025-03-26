@@ -32,9 +32,18 @@ func (j *job) ManageTradeConfigStrategy(loopChannel *chan bool) {
 
 				if currentPrice > (closedPrice * 1.00010) {
 					j.ExchangeMS.UpdateTradeConfig(&pb.UpdateTradeConfigRequest{
-						Enabled:  true,
-						Strategy: 3,
-						Parity:   1,
+						TradeConfig:             uint64(strategy.GetTradeConfig()),
+						User:                    uint64(strategy.GetUser()),
+						Modality:                uint64(strategy.GetModality()),
+						Strategy:                uint64(strategy.GetStrategy()),
+						StrategyVariant:         uint64(strategy.GetStrategyVariant()),
+						Parity:                  uint64(strategy.GetParity()),
+						Exchange:                uint64(strategy.GetExchange()),
+						OperationQuantity:       uint64(strategy.GetOperationQuantity()),
+						OperationAmount:         strategy.GetOperationAmount(),
+						DefaultProfitPercentage: strategy.GetDefaultProfitPercentage(),
+						WalletValueLimit:        strategy.GetWalletValueLimit(),
+						Enabled:                 true,
 					})
 
 					discord := discordService.NewDiscordWebhook()
