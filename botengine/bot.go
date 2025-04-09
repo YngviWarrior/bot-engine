@@ -1,11 +1,14 @@
 package botengine
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	external "github.com/YngviWarrior/bot-engine/infra/external"
 	bybitSDK "github.com/YngviWarrior/bybit-sdk"
+	discordService "github.com/YngviWarrior/discord-webhook"
+	discordstructs "github.com/YngviWarrior/discord-webhook/discordStructs"
 )
 
 type BotEngine interface {
@@ -75,10 +78,13 @@ func (b *botengine) InitBotEngine(loopChannel *chan bool) {
 
 	wg.Wait()
 	if time.Since(start) > (time.Second * 1) {
-		// n.ChannelUrl = DISCORD_DEBUG_TEST
-		// n.Content = fmt.Sprintf("(%v) Loop estretégias executadas em : %v \n", time.Now().Format("2006-01-02 15:04:05"), time.Since(start))
-		// b.Discord.SendNotification(&n)
+		ds := discordService.NewDiscordWebhook()
+		ds.SendNotification(&discordstructs.Notification{
+			ChannelUrl: "/1127722138414092431/h13r0Wy77BUwmrvZtWdtvTRlmMjVetXDMVI1VDaJF13zOg6iZUh888FGk7vrR2fwTOa-",
+			Content:    fmt.Sprintf("(%v) Loop estretégias executadas em : %v \n", time.Now().Format("2006-01-02 15:04:05"), time.Since(start)),
+		})
 	}
 
-	// *loopChannel <- true
+	fmt.Println("Aqui")
+	*loopChannel <- true
 }

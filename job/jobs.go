@@ -1,6 +1,7 @@
 package job
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -23,6 +24,7 @@ type JobInterface interface {
 	SyncKlines()
 	ManageTradeConfigStrategy(*chan bool)
 	CalculateProfit()
+	OpenOperationManager(*chan bool)
 }
 
 func NewJobs() JobInterface {
@@ -105,13 +107,25 @@ func (j *job) InitJobs() {
 		}
 	}()
 
+	go func() {
+		loopChannel := make(chan bool)
+		j.OpenOperationManager(&loopChannel)
+
+		for <-loopChannel {
+			time.Sleep(time.Second * 30)
+			j.OpenOperationManager(&loopChannel)
+		}
+	}()
+
 	func() {
 		loopChannel := make(chan bool)
+
 		bot := botengine.NewBotEngine(bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("BYBIT_SECRET_KEY")))
 		bot.InitBotEngine(&loopChannel)
 
 		for <-loopChannel {
-			go bot.InitBotEngine(&loopChannel)
+			fmt.Println("AQUIi")
+			bot.InitBotEngine(&loopChannel)
 		}
 	}()
 
