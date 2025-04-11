@@ -22,6 +22,7 @@ type ExternalInterface interface {
 	ListWalletWithCoin(*pb.ListWalletWithCoinRequest) *pb.ListWalletWithCoinResponse
 
 	ListParity(*pb.ListParityRequest) *pb.ListParityResponse
+	GetAvgPriceByParityExchange(*pb.GetAvgPriceByParityExchangeRequest) *pb.GetAvgPriceByParityExchangeResponse
 	ListCoin(*pb.ListCoinRequest) *pb.ListCoinResponse
 
 	CreateWallet(*pb.CreateWalletRequest) *pb.CreateWalletResponse
@@ -30,6 +31,8 @@ type ExternalInterface interface {
 	GetCandleFirstMts(*pb.GetCandleFirstMtsRequest) *pb.GetCandleFirstMtsResponse
 	CreateCandles(*pb.CreateCandlesRequest) *pb.CreateCandlesResponse
 	ListCandleLimit(*pb.ListCandleLimitRequest) *pb.ListCandleLimitResponse
+	ListAvgPrices(*pb.ListAvgPricesRequest) *pb.ListAvgPricesResponse
+	GetFirstPrice(*pb.GetFirstPriceRequest) *pb.GetFirstPriceResponse
 
 	ListOperation(*pb.ListOperationRequest) *pb.ListOperationResponse
 	ListOperationByPeriod(*pb.ListOperationByPeriodRequest) *pb.ListOperationByPeriodResponse

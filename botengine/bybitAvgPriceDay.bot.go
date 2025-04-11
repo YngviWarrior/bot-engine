@@ -9,13 +9,14 @@ import (
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
 )
 
-func (b *botengine) ByBitAvgPriceDay(configs *pb.TradeConfig, wg *sync.WaitGroup) {
-	b.OperateAvgPriceDay(configs, wg)
+func (b *botengine) ByBitAvgPriceDay(configs *pb.TradeConfig, kline CombinedData, wg *sync.WaitGroup) {
+	b.OperateAvgPriceDay(configs, kline, wg)
 }
 
-func (b *botengine) OperateAvgPriceDay(configs *pb.TradeConfig, wg *sync.WaitGroup) {
+func (b *botengine) OperateAvgPriceDay(configs *pb.TradeConfig, kline CombinedData, wg *sync.WaitGroup) {
 	var newRegister bool
 	var stableCoin uint64
+
 	switch configs.Parity {
 	case 1, 4:
 		stableCoin = 1
@@ -39,7 +40,12 @@ func (b *botengine) OperateAvgPriceDay(configs *pb.TradeConfig, wg *sync.WaitGro
 		Enabled:         true,
 	})
 	fmt.Println(operations)
-	// currentPrice := candleRepo.FindLastPrice(tx, configs.Parity, configs.Exchange)
+
+	// avg := exchangeMS.GetAvgPriceByParityExchange(&pb.GetAvgPriceByParityExchangeRequest{
+	// 	Parity:   uint64(configs.Parity),
+	// 	Exchange: uint64(configs.Exchange),
+	// })
+	// fmt.Println(avg)
 	// avg := avgPriceRepo.FindByParityExchange(tx, configs.Parity, configs.Exchange)
 	// // log.Println("Open Operations: ", len(list))
 

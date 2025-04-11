@@ -41,91 +41,89 @@ func (j *job) InitJobs() {
 	go j.OpenLiveKline()
 	time.Sleep(time.Second * 5)
 
+	j.SyncKlines()
+
 	go func() {
 		loopChannel := make(chan bool)
-		j.OpenOperationManager(&loopChannel)
+		go j.OpenOperationManager(&loopChannel)
 
 		for <-loopChannel {
-			j.OpenOperationManager(&loopChannel)
+			go j.OpenOperationManager(&loopChannel)
 		}
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		j.ManageTradeConfigStrategy(&loopChannel)
+		go j.CalculateAveragePrices(&loopChannel)
 
 		for <-loopChannel {
-			j.ManageTradeConfigStrategy(&loopChannel)
+			go j.CalculateAveragePrices(&loopChannel)
 		}
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		j.CalculateProfit()
+		go j.ManageTradeConfigStrategy(&loopChannel)
 
 		for <-loopChannel {
-			time.Sleep(time.Minute * 2)
-			j.CalculateProfit()
+			go j.ManageTradeConfigStrategy(&loopChannel)
 		}
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		j.ManageTradeConfigStrategy(&loopChannel)
-
-		for <-loopChannel {
-			j.ManageTradeConfigStrategy(&loopChannel)
-		}
-	}()
-
-	go func() {
-		loopChannel := make(chan bool)
-		j.SyncKlines()
+		go j.CalculateProfit()
 
 		for <-loopChannel {
 			time.Sleep(time.Minute * 2)
-			j.SyncKlines()
+			go j.CalculateProfit()
 		}
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		j.AliveNotification(&loopChannel)
+		go j.ManageTradeConfigStrategy(&loopChannel)
 
 		for <-loopChannel {
-			j.AliveNotification(&loopChannel)
+			go j.ManageTradeConfigStrategy(&loopChannel)
 		}
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		j.SyncAssets(&loopChannel)
+		go j.AliveNotification(&loopChannel)
+
+		for <-loopChannel {
+			go j.AliveNotification(&loopChannel)
+		}
+	}()
+
+	go func() {
+		loopChannel := make(chan bool)
+		go j.SyncAssets(&loopChannel)
 
 		for <-loopChannel {
 			time.Sleep(time.Second * 30)
-			j.SyncAssets(&loopChannel)
+			go j.SyncAssets(&loopChannel)
 		}
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		j.OpenOperationManager(&loopChannel)
+		go j.OpenOperationManager(&loopChannel)
 
 		for <-loopChannel {
 			time.Sleep(time.Second * 30)
-			j.OpenOperationManager(&loopChannel)
+			go j.OpenOperationManager(&loopChannel)
 		}
 	}()
 
-	func() {
-		loopChannel := make(chan bool)
-
+	go func() {
 		bot := botengine.NewBotEngine(bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("BYBIT_SECRET_KEY")))
-		bot.InitBotEngine(&loopChannel)
 
-		for <-loopChannel {
+		for {
 			fmt.Println("AQUIi")
-			bot.InitBotEngine(&loopChannel)
+			bot.InitBotEngine()
 		}
 	}()
 

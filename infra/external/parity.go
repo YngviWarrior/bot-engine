@@ -10,7 +10,7 @@ import (
 func (e *external) ListParity(in *pb.ListParityRequest) (out *pb.ListParityResponse) {
 	client := pb.NewExchangeServiceClient(e.Conn)
 
-	out, err := client.ListParity(context.Background(), &pb.ListParityRequest{})
+	out, err := client.ListParity(context.Background(), in)
 
 	if err != nil {
 		log.Fatalln("E-LP", err)

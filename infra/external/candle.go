@@ -12,7 +12,7 @@ func (e *external) ListCandleLimit(in *pb.ListCandleLimitRequest) (out *pb.ListC
 
 	out, err := client.ListCandleLimit(context.Background(), in)
 	if err != nil {
-		log.Fatalln("E-GKFM", err)
+		log.Fatalln("E-LCL", err)
 	}
 
 	return
@@ -23,7 +23,7 @@ func (e *external) GetCandleFirstMts(in *pb.GetCandleFirstMtsRequest) (out *pb.G
 
 	out, err := client.GetCandleFirstMts(context.Background(), in)
 	if err != nil {
-		log.Fatalln("E-GKFM", err)
+		log.Fatalln("E-GCFM", err)
 	}
 
 	return
@@ -34,7 +34,18 @@ func (e *external) CreateCandles(in *pb.CreateCandlesRequest) (out *pb.CreateCan
 
 	out, err := client.CreateCandles(context.Background(), in)
 	if err != nil {
-		log.Fatalln("E-GKFM", err)
+		log.Fatalln("E-CC", err)
+	}
+
+	return
+}
+
+func (e *external) GetFirstPrice(in *pb.GetFirstPriceRequest) (out *pb.GetFirstPriceResponse) {
+	client := pb.NewExchangeServiceClient(e.Conn)
+
+	out, err := client.GetFirstPrice(context.Background(), in)
+	if err != nil {
+		log.Fatalln("E-GFP", err)
 	}
 
 	return

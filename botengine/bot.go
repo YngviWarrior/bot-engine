@@ -1,18 +1,21 @@
 package botengine
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
 	external "github.com/YngviWarrior/bot-engine/infra/external"
+	"github.com/YngviWarrior/bot-engine/infra/rabbitmq"
 	bybitSDK "github.com/YngviWarrior/bybit-sdk"
 	discordService "github.com/YngviWarrior/discord-webhook"
 	discordstructs "github.com/YngviWarrior/discord-webhook/discordStructs"
 )
 
 type BotEngine interface {
-	InitBotEngine(loopChannel *chan bool)
+	InitBotEngine()
 }
 
 type botengine struct {
@@ -25,7 +28,16 @@ func NewBotEngine(bybit bybitSDK.BybitServiceInterface) BotEngine {
 	}
 }
 
-func (b *botengine) InitBotEngine(loopChannel *chan bool) {
+func (b *botengine) InitBotEngine() {
+	rabbit := rabbitmq.NewRabbitMQConnection()
+	msg := <-rabbit.Listen("klines", "")
+
+	var kline CombinedData
+	err := json.Unmarshal(msg.Body, &kline)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	tradeConfigList := external.NewExchangeExternal().ListTradeConfig()
 	var wg sync.WaitGroup
 
@@ -53,7 +65,7 @@ func (b *botengine) InitBotEngine(loopChannel *chan bool) {
 								switch configs.StrategyVariant {
 								case AVERAGE_PRICE_DAY:
 									if configs.StrategyVariantEnabled {
-										go b.ByBitAvgPriceDay(configs, &wg)
+										go b.ByBitAvgPriceDay(configs, kline, &wg)
 									}
 								case AVERAGE_PRICE_WEEK:
 									if configs.StrategyVariantEnabled {
@@ -84,7 +96,4 @@ func (b *botengine) InitBotEngine(loopChannel *chan bool) {
 			Content:    fmt.Sprintf("(%v) Loop estretégias executadas em : %v \n", time.Now().Format("2006-01-02 15:04:05"), time.Since(start)),
 		})
 	}
-
-	fmt.Println("Aqui")
-	*loopChannel <- true
 }

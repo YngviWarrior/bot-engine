@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/YngviWarrior/bot-engine/job"
@@ -37,5 +38,10 @@ func main() {
 		log.Printf("%v", err)
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	job.NewJobs().InitJobs()
+
+	wg.Wait()
 }
