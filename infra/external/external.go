@@ -31,13 +31,19 @@ type ExternalInterface interface {
 	GetCandleFirstMts(*pb.GetCandleFirstMtsRequest) *pb.GetCandleFirstMtsResponse
 	CreateCandles(*pb.CreateCandlesRequest) *pb.CreateCandlesResponse
 	ListCandleLimit(*pb.ListCandleLimitRequest) *pb.ListCandleLimitResponse
-	ListAvgPrices(*pb.ListAvgPricesRequest) *pb.ListAvgPricesResponse
 	GetFirstPrice(*pb.GetFirstPriceRequest) *pb.GetFirstPriceResponse
+	GetLastPrice(*pb.GetLastPriceRequest) *pb.GetLastPriceResponse
+
+	ListAvgPrices(*pb.ListAvgPricesRequest) *pb.ListAvgPricesResponse
+	UpdateAveragePrice(*pb.UpdateAveragePriceRequest) *pb.UpdateAveragePriceResponse
 
 	ListOperation(*pb.ListOperationRequest) *pb.ListOperationResponse
 	ListOperationByPeriod(*pb.ListOperationByPeriodRequest) *pb.ListOperationByPeriodResponse
 	ListAllOperation(*pb.ListAllOperationRequest) *pb.ListAllOperationResponse
 	UpdateOperation(*pb.UpdateOperationRequest) *pb.UpdateOperationResponse
+	CreateOperation(*pb.CreateOperationRequest) *pb.CreateOperationResponse
+
+	GetLastBuyRegisterByOperation(*pb.GetLastBuyRegisterByOperationRequest) *pb.GetLastBuyRegisterByOperationResponse
 }
 
 func NewUserExternal() ExternalInterface {

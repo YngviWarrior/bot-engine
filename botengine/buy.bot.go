@@ -5,9 +5,9 @@ import (
 )
 
 type BuyCoinParams struct {
-	Operation  int64
+	Operation  uint64
 	ClosePrice float64
-	Exchange   int64
+	Exchange   uint64
 	OpAmount   string
 	Symbol     string
 	OrderType  string

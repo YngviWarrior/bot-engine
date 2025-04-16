@@ -51,10 +51,22 @@ func (i *external) ListOperation(in *pb.ListOperationRequest) *pb.ListOperationR
 func (i *external) UpdateOperation(in *pb.UpdateOperationRequest) *pb.UpdateOperationResponse {
 	client := pb.NewExchangeServiceClient(i.Conn)
 
-	resp, err := client.UpdateOperation(context.Background(), &pb.UpdateOperationRequest{})
+	resp, err := client.UpdateOperation(context.Background(), in)
 
 	if err != nil {
-		log.Fatalln("E-LO", err)
+		log.Fatalln("E-UO", err)
+	}
+
+	return resp
+}
+
+func (i *external) CreateOperation(in *pb.CreateOperationRequest) *pb.CreateOperationResponse {
+	client := pb.NewExchangeServiceClient(i.Conn)
+
+	resp, err := client.CreateOperation(context.Background(), in)
+
+	if err != nil {
+		log.Fatalln("E-CO", err)
 	}
 
 	return resp

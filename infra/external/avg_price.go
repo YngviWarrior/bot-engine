@@ -29,3 +29,14 @@ func (e *external) ListAvgPrices(in *pb.ListAvgPricesRequest) (out *pb.ListAvgPr
 
 	return
 }
+
+func (e *external) UpdateAveragePrice(in *pb.UpdateAveragePriceRequest) (out *pb.UpdateAveragePriceResponse) {
+	client := pb.NewExchangeServiceClient(e.Conn)
+
+	out, err := client.UpdateAveragePrice(context.Background(), in)
+	if err != nil {
+		log.Fatalln("E-UAP", err)
+	}
+
+	return
+}

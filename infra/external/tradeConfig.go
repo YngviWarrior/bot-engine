@@ -10,7 +10,7 @@ import (
 func (i *external) GetTradeConfig(in *pb.GetTradeConfigRequest) *pb.GetTradeConfigResponse {
 	client := pb.NewExchangeServiceClient(i.Conn)
 
-	resp, err := client.GetTradeConfig(context.Background(), &pb.GetTradeConfigRequest{})
+	resp, err := client.GetTradeConfig(context.Background(), in)
 
 	if err != nil {
 		log.Fatalln("E-GTC", err)
@@ -34,7 +34,7 @@ func (i *external) ListTradeConfig() *pb.TradeConfigResponse {
 func (i *external) UpdateTradeConfig(in *pb.UpdateTradeConfigRequest) (out *pb.UpdateTradeConfigResponse) {
 	client := pb.NewExchangeServiceClient(i.Conn)
 
-	out, err := client.UpdateTradeConfig(context.Background(), &pb.UpdateTradeConfigRequest{})
+	out, err := client.UpdateTradeConfig(context.Background(), in)
 
 	if err != nil {
 		log.Fatalln("E-UTC", err)

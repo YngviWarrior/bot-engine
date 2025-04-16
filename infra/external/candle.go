@@ -50,3 +50,14 @@ func (e *external) GetFirstPrice(in *pb.GetFirstPriceRequest) (out *pb.GetFirstP
 
 	return
 }
+
+func (e *external) GetLastPrice(in *pb.GetLastPriceRequest) (out *pb.GetLastPriceResponse) {
+	client := pb.NewExchangeServiceClient(e.Conn)
+
+	out, err := client.GetLastPrice(context.Background(), in)
+	if err != nil {
+		log.Fatalln("E-GLP", err)
+	}
+
+	return
+}

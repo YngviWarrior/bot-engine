@@ -38,19 +38,10 @@ func NewJobs() JobInterface {
 }
 
 func (j *job) InitJobs() {
-	go j.OpenLiveKline()
-	time.Sleep(time.Second * 5)
-
 	j.SyncKlines()
 
-	go func() {
-		loopChannel := make(chan bool)
-		go j.OpenOperationManager(&loopChannel)
-
-		for <-loopChannel {
-			go j.OpenOperationManager(&loopChannel)
-		}
-	}()
+	go j.OpenLiveKline()
+	time.Sleep(time.Second * 5)
 
 	go func() {
 		loopChannel := make(chan bool)
@@ -58,6 +49,15 @@ func (j *job) InitJobs() {
 
 		for <-loopChannel {
 			go j.CalculateAveragePrices(&loopChannel)
+		}
+	}()
+
+	go func() {
+		loopChannel := make(chan bool)
+		go j.OpenOperationManager(&loopChannel)
+
+		for <-loopChannel {
+			go j.OpenOperationManager(&loopChannel)
 		}
 	}()
 

@@ -20,9 +20,12 @@ func (j *job) OpenOperationManager(loopChannel *chan bool) {
 			StrategyVariant: op.GetStrategyVariant(),
 			Parity:          op.GetParity(),
 			Exchange:        op.GetExchange(),
+			Modality:        1,
 		})
 
+		fmt.Println("AQUI1")
 		if op.Enabled && !op.Closed && op.OpenPrice > 0 {
+			fmt.Println("AQUI2")
 			sellQuote := utils.FindSellCotation(op.InvestedAmount, (op.InvestedAmount / op.OpenPrice), 0.001, op.OpenPrice, tradeConfig.TradeConfig.DefaultProfitPercentage)
 
 			discord := discordService.NewDiscordWebhook()

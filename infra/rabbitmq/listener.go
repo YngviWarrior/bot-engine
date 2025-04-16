@@ -40,7 +40,7 @@ func (r *rabbitmq) Listen(exchangeName string, queueName string) (msgs <-chan am
 	msgs, err = ch.Consume(
 		queue.Name,
 		"",
-		true,  // Auto Ack: true (confirma automaticamente)
+		false, // Auto Ack: true (confirma automaticamente)
 		false, // Exclusive: false
 		false, // No Local: false
 		false, // No Wait: false

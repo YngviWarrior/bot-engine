@@ -2,11 +2,17 @@ package botengine
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/YngviWarrior/bot-engine/infra/external"
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
+	"github.com/YngviWarrior/bot-engine/utils"
+	bybitstructs "github.com/YngviWarrior/bybit-sdk/byBitStructs"
+	discordService "github.com/YngviWarrior/discord-webhook"
+	discordstructs "github.com/YngviWarrior/discord-webhook/discordStructs"
 )
 
 func (b *botengine) ByBitAvgPriceDay(configs *pb.TradeConfig, kline CombinedData, wg *sync.WaitGroup) {
@@ -41,140 +47,151 @@ func (b *botengine) OperateAvgPriceDay(configs *pb.TradeConfig, kline CombinedDa
 	})
 	fmt.Println(operations)
 
-	// avg := exchangeMS.GetAvgPriceByParityExchange(&pb.GetAvgPriceByParityExchangeRequest{
-	// 	Parity:   uint64(configs.Parity),
-	// 	Exchange: uint64(configs.Exchange),
-	// })
-	// fmt.Println(avg)
-	// avg := avgPriceRepo.FindByParityExchange(tx, configs.Parity, configs.Exchange)
+	avg := exchangeMS.GetAvgPriceByParityExchange(&pb.GetAvgPriceByParityExchangeRequest{
+		Parity:   uint64(configs.Parity),
+		Exchange: uint64(configs.Exchange),
+	})
+	fmt.Println(avg)
 	// // log.Println("Open Operations: ", len(list))
 
-	// if len(list) < int(configs.OperationQuantity) && wc.Amount > (configs.OperationAmount+configs.WalletValueLimit) {
-	// 	opId := operationRepo.Create(tx, configs.User, int64(configs.Parity), int64(configs.Exchange), 1, 1, configs.OperationAmount, true)
-	// 	if opId == 0 {
-	// 		tx.Rollback()
-	// 		conn.Close()
-	// 		log.Panicln("BITB 01: ")
-	// 	}
+	if len(operations.Operations) < int(configs.OperationQuantity) && wallet.Wallet.Amount > (configs.OperationAmount+configs.WalletValueLimit) {
+		op := exchangeMS.CreateOperation(&pb.CreateOperationRequest{
+			Operation: &pb.Operation{
+				User:            uint64(configs.GetUser()),
+				Parity:          uint64(configs.GetParity()),
+				Exchange:        uint64(configs.GetExchange()),
+				Strategy:        1,
+				StrategyVariant: 1,
+				InvestedAmount:  configs.GetOperationAmount(),
+				Enabled:         true,
+			},
+		})
 
-	// 	n.ChannelUrl = constants.DISCORD_NEW_OPERATION_TEST
-	// 	n.Content = fmt.Sprintf("(%v) <---> Registering New Order! %v Strategy %v (%v)", time.Now().Format("2006-01-02 15:04:05"), configs.ParitySymbol, configs.StrategyName, configs.StrategyVariantName)
-	// 	b.Discord.SendNotification(&n)
-	// 	newRegister = true
-	// }
+		if op.Operation.Operation == 0 {
+			log.Panicln("BITB 01: ")
+		}
 
-	// for _, operation := range list {
-	// conn := db.CreateConnection()
-	// tx := db.CreateTransaction(&ctx, conn)
+		discordService.NewDiscordWebhook().SendNotification(
+			&discordstructs.Notification{
+				ChannelUrl: "/1127722725318856714/31CT1E3rKDE-U1Ip-4nuYX_aIKJKGpKu9D3_p122FRMD5zbKs719t4YFdlV1LtTNDfHL",
+				Content:    fmt.Sprintf("(%v) <---> Registering New Order! %v Strategy %v (%v)", time.Now().Format("2006-01-02 15:04:05"), configs.ParitySymbol, configs.StrategyName, configs.StrategyVariantName),
+			},
+		)
 
-	// coinQuantity, opFee := operationHistoryRepo.GetLastBuyRegisterByOperation(tx, operation.Operation)
-	// sellCotation := utils.FindSellCotation(operation.InvestedAmount, coinQuantity, opFee, operation.OpenPrice, configs.ProfitPercentage)
+		newRegister = true
+	}
 
-	// var isProfitable bool = (currentPrice >= sellCotation)
+	for _, operation := range operations.Operations {
+		lastRegister := exchangeMS.GetLastBuyRegisterByOperation(&pb.GetLastBuyRegisterByOperationRequest{
+			Operation: operation.Operation,
+		})
+		sellCotation := utils.FindSellCotation(operation.InvestedAmount, lastRegister.CoinQuantity, lastRegister.Fee, operation.OpenPrice, configs.DefaultProfitPercentage)
 
-	// // fmt.Printf("%v AVG Day Op: %v -> SellCotation %v \n", time.Now().Format("2006-01-02 15:04:05"), operation.Operation, sellCotation)
-	// if wc.Amount > (configs.OperationAmount+configs.WalletValueLimit) && coinQuantity == 0 {
-	// 	if currentPrice > avg.Day {
-	// 		tx.Rollback()
-	// 		conn.Close()
-	// 		continue
-	// 	}
+		currentPrice := utils.ParseFloat(kline.Close)
+		var isProfitable bool = (currentPrice >= sellCotation)
 
-	// 	var bc BuyCoinParams
-	// 	bc.Operation = operation.Operation
-	// 	bc.ClosePrice = currentPrice
-	// 	bc.Exchange = int64(configs.Exchange)
-	// 	bc.Symbol = configs.ParitySymbol
-	// 	bc.OrderType = "LIMIT"
-	// 	bc.OpFee = 0.001
+		fmt.Printf("%v AVG Day Op: %v -> SellCotation %v \n", time.Now().Format("2006-01-02 15:04:05"), operation.Operation, sellCotation)
+		if wallet.Wallet.Amount > (configs.OperationAmount+configs.WalletValueLimit) && lastRegister.CoinQuantity == 0 {
+			if currentPrice > avg.Day {
+				continue
+			}
 
-	// 	switch operation.Parity {
-	// 	case constants.BTCUSDT:
-	// 		bc.OpAmount = fmt.Sprintf("%.6f", utils.Truncate(configs.OperationAmount/currentPrice, 5))
-	// 	case constants.ETHUSDT:
-	// 		bc.OpAmount = fmt.Sprintf("%.5f", utils.Truncate(configs.OperationAmount/currentPrice, 4))
-	// 	}
+			var bc BuyCoinParams
+			bc.Operation = operation.Operation
+			bc.ClosePrice = currentPrice
+			bc.Exchange = configs.Exchange
+			bc.Symbol = configs.ParitySymbol
+			bc.OrderType = "LIMIT"
+			bc.OpFee = 0.001
 
-	// 	switch os.Getenv("ENVIROMENT") {
-	// 	case "server", "local", "testnet":
-	// 		if b.BuyCoin(tx, &bc) {
-	// 			if !walletRepo.UpdateAmount(tx, fmt.Sprintf("(%v, %v, %v, %v, %v)", wc.Wallet, wc.Exchange, configs.User, wc.Coin, (-1*configs.OperationAmount))) {
-	// 				tx.Rollback()
-	// 				conn.Close()
-	// 				log.Panicln("BITB 02: ")
-	// 			}
+			switch operation.Parity {
+			case BTCUSDT:
+				bc.OpAmount = fmt.Sprintf("%.6f", utils.Truncate(configs.OperationAmount/currentPrice, 5))
+			case ETHUSDT:
+				bc.OpAmount = fmt.Sprintf("%.5f", utils.Truncate(configs.OperationAmount/currentPrice, 4))
+			}
 
-	// 			var x repository.OperationDto
+			switch os.Getenv("ENVIROMENT") {
+			case "server", "local", "testnet":
+				b.Bybit.CreateOrder(&bybitstructs.OrderParams{})
+				// if b.BuyCoin(tx, &bc) {
+				// 	if !walletRepo.UpdateAmount(tx, fmt.Sprintf("(%v, %v, %v, %v, %v)", wc.Wallet, wc.Exchange, configs.User, wc.Coin, (-1*configs.OperationAmount))) {
+				// 		tx.Rollback()
+				// 		conn.Close()
+				// 		log.Panicln("BITB 02: ")
+				// 	}
 
-	// 			x.Operation = operation.Operation
-	// 			x.MtsStart = operation.MtsStart
-	// 			x.InvestedAmount = configs.OperationAmount
-	// 			x.OpenPrice = currentPrice
-	// 			x.ClosePrice = operation.ClosePrice
-	// 			x.Profit = configs.ProfitPercentage
-	// 			x.Closed = false
-	// 			x.Enabled = true
+				// 	var x repository.OperationDto
 
-	// 			if !operationRepo.Update(tx, &x) {
-	// 				tx.Rollback()
-	// 				conn.Close()
-	// 				log.Panicln("BITB 03: ")
-	// 			}
+				// 	x.Operation = operation.Operation
+				// 	x.MtsStart = operation.MtsStart
+				// 	x.InvestedAmount = configs.OperationAmount
+				// 	x.OpenPrice = currentPrice
+				// 	x.ClosePrice = operation.ClosePrice
+				// 	x.Profit = configs.ProfitPercentage
+				// 	x.Closed = false
+				// 	x.Enabled = true
 
-	// 			newRegister = true
-	// 		}
-	// 	}
-	// } else if isProfitable && coinQuantity != 0 {
-	// 	var p SellCoinParams
+				// 	if !operationRepo.Update(tx, &x) {
+				// 		tx.Rollback()
+				// 		conn.Close()
+				// 		log.Panicln("BITB 03: ")
+				// 	}
 
-	// 	p.Operation = operation.Operation
-	// 	p.ClosePrice = currentPrice
-	// 	p.Exchange = int64(configs.Exchange)
-	// 	p.OpAmount = operation.InvestedAmount
-	// 	p.Symbol = configs.ParitySymbol
-	// 	p.OrderType = "LIMIT"
-	// 	p.OpFee = 0.001
+				// 	newRegister = true
+				// }
+			}
+		} else if isProfitable && lastRegister.CoinQuantity != 0 {
+			var p SellCoinParams
 
-	// 	switch operation.Parity {
-	// 	case constants.BTCUSDT:
-	// 		p.CoinQuantity = utils.Truncate(coinQuantity, 5)
-	// 	case constants.ETHUSDT:
-	// 		p.CoinQuantity = utils.Truncate(coinQuantity, 4)
-	// 	}
+			p.Operation = operation.Operation
+			p.ClosePrice = currentPrice
+			p.Exchange = configs.Exchange
+			p.OpAmount = operation.InvestedAmount
+			p.Symbol = configs.ParitySymbol
+			p.OrderType = "LIMIT"
+			p.OpFee = 0.001
 
-	// 	switch os.Getenv("ENVIROMENT") {
-	// 	case "server", "local", "testnet":
-	// 		if b.SellCoin(tx, &p) {
-	// 			if !walletRepo.UpdateAmount(tx, fmt.Sprintf("(%v, %v, %v, %v, %v)", wc.Wallet, wc.Exchange, configs.User, wc.Coin, (operation.InvestedAmount*(1+configs.ProfitPercentage)))) {
-	// 				tx.Rollback()
-	// 				conn.Close()
-	// 				log.Panicln("BITB 04: ")
-	// 			}
+			switch operation.Parity {
+			case BTCUSDT:
+				p.CoinQuantity = utils.Truncate(lastRegister.CoinQuantity, 5)
+			case ETHUSDT:
+				p.CoinQuantity = utils.Truncate(lastRegister.CoinQuantity, 4)
+			}
 
-	// 			var x repository.OperationDto
+			switch os.Getenv("ENVIROMENT") {
+			case "server", "local", "testnet":
+				// if b.SellCoin(tx, &p) {
+				// 	if !walletRepo.UpdateAmount(tx, fmt.Sprintf("(%v, %v, %v, %v, %v)", wc.Wallet, wc.Exchange, configs.User, wc.Coin, (operation.InvestedAmount*(1+configs.ProfitPercentage)))) {
+				// 		tx.Rollback()
+				// 		conn.Close()
+				// 		log.Panicln("BITB 04: ")
+				// 	}
 
-	// 			x.Operation = operation.Operation
-	// 			x.MtsStart = operation.MtsStart
-	// 			x.MtsFinish = time.Now().UnixMicro()
-	// 			x.InvestedAmount = operation.InvestedAmount
-	// 			x.OpenPrice = operation.OpenPrice
-	// 			x.ClosePrice = currentPrice
-	// 			x.ProfitAmount = (currentPrice * coinQuantity) - operation.InvestedAmount
-	// 			x.Profit = operation.Profit
-	// 			x.Closed = false
-	// 			x.Enabled = true
+				// 	var x repository.OperationDto
 
-	// 			if !operationRepo.Update(tx, &x) {
-	// 				tx.Rollback()
-	// 				conn.Close()
-	// 				log.Panicln("BITB 05: ")
-	// 			}
+				// 	x.Operation = operation.Operation
+				// 	x.MtsStart = operation.MtsStart
+				// 	x.MtsFinish = time.Now().UnixMicro()
+				// 	x.InvestedAmount = operation.InvestedAmount
+				// 	x.OpenPrice = operation.OpenPrice
+				// 	x.ClosePrice = currentPrice
+				// 	x.ProfitAmount = (currentPrice * coinQuantity) - operation.InvestedAmount
+				// 	x.Profit = operation.Profit
+				// 	x.Closed = false
+				// 	x.Enabled = true
 
-	// 			newRegister = true
-	// 		}
-	// 	}
-	// }
-	// }
+				// 	if !operationRepo.Update(tx, &x) {
+				// 		tx.Rollback()
+				// 		conn.Close()
+				// 		log.Panicln("BITB 05: ")
+				// 	}
+
+				// 	newRegister = true
+				// }
+			}
+		}
+	}
 
 	if newRegister {
 		time.Sleep(time.Millisecond * 500)

@@ -5,10 +5,10 @@ import (
 )
 
 type SellCoinParams struct {
-	Operation    int64
+	Operation    uint64
 	ClosePrice   float64
 	CoinQuantity float64
-	Exchange     int64
+	Exchange     uint64
 	OpAmount     float64
 	OpFee        float64
 	Symbol       string
