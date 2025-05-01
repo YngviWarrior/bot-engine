@@ -44,6 +44,9 @@ type ExternalInterface interface {
 	CreateOperation(*pb.CreateOperationRequest) *pb.CreateOperationResponse
 
 	GetLastBuyRegisterByOperation(*pb.GetLastBuyRegisterByOperationRequest) *pb.GetLastBuyRegisterByOperationResponse
+	CreateOperationHistory(*pb.CreateOperationHistoryRequest) *pb.CreateOperationHistoryResponse
+
+	Strategy(*pb.StrategyRequest) *pb.StrategyResponse
 }
 
 func NewUserExternal() ExternalInterface {

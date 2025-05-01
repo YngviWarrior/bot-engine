@@ -11,6 +11,7 @@ func (r *rabbitmq) Listen(exchangeName string, queueName string) (msgs <-chan am
 	if err != nil {
 		log.Fatal(err)
 	}
+	// defer ch.Close()
 
 	queue, err := ch.QueueDeclare(
 		"",

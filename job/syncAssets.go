@@ -11,7 +11,6 @@ import (
 
 func (j *job) SyncAssets(loopChannel *chan bool) {
 	bybit := bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("BYBIT_SECRET_KEY"))
-
 	coins := j.ExchangeMS.ListCoin(&pb.ListCoinRequest{})
 
 	if len(coins.Coin) == 0 {
@@ -63,5 +62,5 @@ func (j *job) SyncAssets(loopChannel *chan bool) {
 		Wallet: updateValues,
 	})
 
-	<-*loopChannel
+	*loopChannel <- true
 }

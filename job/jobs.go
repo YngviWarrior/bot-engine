@@ -1,7 +1,8 @@
 package job
 
 import (
-	"fmt"
+	"encoding/json"
+	"log"
 	"os"
 	"time"
 
@@ -10,6 +11,40 @@ import (
 	"github.com/YngviWarrior/bot-engine/infra/rabbitmq"
 	bybitSDK "github.com/YngviWarrior/bybit-sdk"
 )
+
+type MarketData struct {
+	Start     uint64 `json:"start"`
+	End       uint64 `json:"end"`
+	Interval  string `json:"interval"`
+	Open      string `json:"open"`
+	Close     string `json:"close"`
+	High      string `json:"high"`
+	Low       string `json:"low"`
+	Volume    string `json:"volume"`
+	Turnover  string `json:"turnover"`
+	Confirm   bool   `json:"confirm"`
+	Timestamp uint64 `json:"timestamp"`
+}
+
+type Wallet struct {
+	Wallet   int     `json:"wallet"`
+	Exchange int     `json:"exchange"`
+	Coin     int     `json:"coin"`
+	Amount   float64 `json:"amount"`
+}
+
+type FullData struct {
+	Market MarketData `json:"market"`
+	Wallet Wallet     `json:"wallet"`
+	Coin   int        `json:"coin"`
+}
+
+type CombinedData struct {
+	Type  string       `json:"type"`
+	Topic string       `json:"topic"`
+	Data  []MarketData `json:"data"`
+	Ts    int64        `json:"ts"`
+}
 
 type job struct {
 	RabbitMQ   rabbitmq.RabbitMQInterface
@@ -38,16 +73,17 @@ func NewJobs() JobInterface {
 }
 
 func (j *job) InitJobs() {
+	go j.OpenLiveOrders()
 	j.SyncKlines()
 
 	go j.OpenLiveKline()
-	time.Sleep(time.Second * 5)
 
 	go func() {
 		loopChannel := make(chan bool)
 		go j.CalculateAveragePrices(&loopChannel)
 
 		for <-loopChannel {
+			time.Sleep(time.Second * 1)
 			go j.CalculateAveragePrices(&loopChannel)
 		}
 	}()
@@ -57,6 +93,7 @@ func (j *job) InitJobs() {
 		go j.OpenOperationManager(&loopChannel)
 
 		for <-loopChannel {
+			time.Sleep(time.Second * 1)
 			go j.OpenOperationManager(&loopChannel)
 		}
 	}()
@@ -66,6 +103,7 @@ func (j *job) InitJobs() {
 		go j.ManageTradeConfigStrategy(&loopChannel)
 
 		for <-loopChannel {
+			time.Sleep(time.Second * 1)
 			go j.ManageTradeConfigStrategy(&loopChannel)
 		}
 	}()
@@ -85,6 +123,7 @@ func (j *job) InitJobs() {
 		go j.ManageTradeConfigStrategy(&loopChannel)
 
 		for <-loopChannel {
+			time.Sleep(time.Second * 1)
 			go j.ManageTradeConfigStrategy(&loopChannel)
 		}
 	}()
@@ -118,13 +157,21 @@ func (j *job) InitJobs() {
 		}
 	}()
 
-	go func() {
-		bot := botengine.NewBotEngine(bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("BYBIT_SECRET_KEY")))
+	func() {
+		bot := botengine.NewBotEngine(bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("BYBIT_SECRET_KEY")), external.NewExchangeExternal())
+		rabbit := rabbitmq.NewRabbitMQConnection()
 
-		for {
-			fmt.Println("AQUIi")
-			bot.InitBotEngine()
+		messages := rabbit.Listen("klines", "")
+		for msg := range messages {
+			var kline rabbitmq.CombinedData
+			err := json.Unmarshal(msg.Body, &kline)
+			if err != nil {
+				log.Println("Erro ao parsear mensagem:", err)
+				continue
+			}
+			go bot.InitBotEngine(kline)
 		}
+
 	}()
 
 }

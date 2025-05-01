@@ -10,9 +10,9 @@ import (
 )
 
 func (j *job) ManageTradeConfigStrategy(loopChannel *chan bool) {
-	tradeConfig := j.ExchangeMS.ListTradeConfig()
+	tradeConfigList := j.ExchangeMS.ListTradeConfig()
 
-	for _, strategy := range tradeConfig.GetTradeConfig() {
+	for _, strategy := range tradeConfigList.GetTradeConfig() {
 		if strategy.GetStrategy() == 3 {
 			lastCandles := j.ExchangeMS.ListCandleLimit(&pb.ListCandleLimitRequest{
 				Exchange: uint64(strategy.GetExchange()),

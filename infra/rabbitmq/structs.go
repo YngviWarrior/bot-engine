@@ -1,8 +1,8 @@
-package botengine
+package rabbitmq
 
 type MarketData struct {
-	Start     int64  `json:"start"`
-	End       int64  `json:"end"`
+	Start     uint64 `json:"start"`
+	End       uint64 `json:"end"`
 	Interval  string `json:"interval"`
 	Open      string `json:"open"`
 	Close     string `json:"close"`
@@ -11,7 +11,7 @@ type MarketData struct {
 	Volume    string `json:"volume"`
 	Turnover  string `json:"turnover"`
 	Confirm   bool   `json:"confirm"`
-	Timestamp int64  `json:"timestamp"`
+	Timestamp uint64 `json:"timestamp"`
 }
 
 type Wallet struct {
@@ -28,17 +28,8 @@ type FullData struct {
 }
 
 type CombinedData struct {
-	Start     int64  `json:"start"`
-	End       int64  `json:"end"`
-	Interval  string `json:"interval"`
-	Open      string `json:"open"`
-	Close     string `json:"close"`
-	High      string `json:"high"`
-	Low       string `json:"low"`
-	Volume    string `json:"volume"`
-	Turnover  string `json:"turnover"`
-	Confirm   bool   `json:"confirm"`
-	Timestamp int64  `json:"timestamp"`
-	Wallet    Wallet `json:"wallet"`
-	Coin      int    `json:"coin"`
+	Type  string       `json:"type"`
+	Topic string       `json:"topic"`
+	Data  []MarketData `json:"data"`
+	Ts    int64        `json:"ts"`
 }

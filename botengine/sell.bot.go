@@ -1,7 +1,15 @@
 package botengine
 
 import (
-	"database/sql"
+	"fmt"
+	"log"
+	"strconv"
+	"time"
+
+	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
+	bybitstructs "github.com/YngviWarrior/bybit-sdk/byBitStructs"
+	discordService "github.com/YngviWarrior/discord-webhook"
+	discordstructs "github.com/YngviWarrior/discord-webhook/discordStructs"
 )
 
 type SellCoinParams struct {
@@ -15,7 +23,7 @@ type SellCoinParams struct {
 	OrderType    string
 }
 
-func (b *botengine) SellCoin(tx *sql.Tx, params *SellCoinParams) bool {
+func (b *botengine) SellCoin(params *SellCoinParams) bool {
 	switch params.Exchange {
 	case 1: //Binance
 		// var BinanceInterface services.BinanceInterface = &services.Binance{}
@@ -50,38 +58,41 @@ func (b *botengine) SellCoin(tx *sql.Tx, params *SellCoinParams) bool {
 		// 	return false
 		// }
 	case 2: //ByBit
-		// p.Symbol = params.Symbol
-		// p.Side = "SELL"
-		// p.OrderType = params.OrderType
-		// p.OrderPrice = fmt.Sprintf("%.2f", params.ClosePrice)
-		// p.OrderQty = fmt.Sprintf("%v", params.CoinQuantity)
-		// p.TimeInForce = "GTC"
+		p := &bybitstructs.OrderParams{
+			Category:    "spot",
+			Symbol:      params.Symbol,
+			Side:        "Sell",
+			OrderType:   params.OrderType,
+			OrderPrice:  fmt.Sprintf("%.2f", params.ClosePrice),
+			OrderQty:    fmt.Sprintf("%v", params.CoinQuantity),
+			TimeInForce: "GTC",
+		}
 
-		// res := b.ByBit.CreateOrder(p)
-		// log.Println("SELL ", res, " -> OP: ", params.Operation)
+		res := b.Bybit.CreateOrder(p)
+		log.Println("SELL ", res, " -> OP: ", params.Operation)
 
-		// if res.RetCode == 0 {
-		// 	orderId, _ := strconv.ParseInt(res.Result.OrderID, 10, 64)
+		if res.RetCode == 0 {
+			orderId, _ := strconv.ParseInt(res.Result.OrderID, 10, 64)
 
-		// 	pp.Operation = params.Operation
-		// 	pp.TransactionType = 2
-		// 	pp.CoinPrice = params.ClosePrice
-		// 	pp.CoinQuantity = p.OrderQty
-		// 	pp.StablePrice = params.OpAmount
-		// 	pp.StableQuantity = params.OpAmount
-		// 	pp.Fee = params.OpFee
-		// 	pp.OperationExchangeId = orderId
-
-		// 	if !operationHistory.Create(tx, &pp) {
-		// 		log.Panicln("SBC 02: ")
-		// 		return false
-		// 	}
-		// } else {
-		// 	n.ChannelUrl = constants.DISCORD_ERROR_TEST
-		// 	n.Content = fmt.Sprintf("(%v) <---> ERR Sell %v: Send %v <----> Get %v ", time.Now().Format("2006-01-02 15:04:05"), params.Operation, p, res)
-		// 	b.Discord.SendNotification(&n)
-		// 	return false
-		// }
+			b.External.CreateOperationHistory(&pb.CreateOperationHistoryRequest{
+				OperationHistory: &pb.OperationHistory{
+					Operation:           params.Operation,
+					TransactionType:     2,
+					CoinPrice:           params.ClosePrice,
+					CoinQuantity:        params.CoinQuantity,
+					StablePrice:         params.OpAmount,
+					StableQuantity:      params.OpAmount,
+					Fee:                 params.OpFee,
+					OperationExchangeId: string(orderId),
+				},
+			})
+		} else {
+			discordService.NewDiscordWebhook().SendNotification(&discordstructs.Notification{
+				ChannelUrl: "/1127721886214795325/h00kYmfUrFTAIIIJasJi2MOnD0jPRmja_NYXoC1gsxSv4pxKKFBQGWsr9T0FDGIf_RCk",
+				Content:    fmt.Sprintf("(%v) <---> ERR Sell %v: Send %v <----> Get %v ", time.Now().Format("2006-01-02 15:04:05"), params.Operation, p, res),
+			})
+			return false
+		}
 	case 3: //TEST
 		// var p bBR.OrderParams
 

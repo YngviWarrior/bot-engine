@@ -6,8 +6,8 @@ const BYBIT_EXCH = 2
 const SPOT_MODALITY = 1
 
 const AVERAGE_PRICE = 1
-const AVERAGE_PRICE_DAY = 1
-const AVERAGE_PRICE_WEEK = 2
+const AVERAGE_PRICE_DAY = 2
+const AVERAGE_PRICE_WEEK = 3
 
 const CLOSE_OPEN = 2
 const FAST_TRADE = 3

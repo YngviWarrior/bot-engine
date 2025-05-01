@@ -1,10 +1,7 @@
 package botengine
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"sync"
 	"time"
 
 	external "github.com/YngviWarrior/bot-engine/infra/external"
@@ -15,46 +12,29 @@ import (
 )
 
 type BotEngine interface {
-	InitBotEngine()
+	InitBotEngine(kline rabbitmq.CombinedData)
 }
 
 type botengine struct {
-	Bybit bybitSDK.BybitServiceInterface
+	Bybit    bybitSDK.BybitServiceInterface
+	External external.ExternalInterface
 }
 
-func NewBotEngine(bybit bybitSDK.BybitServiceInterface) BotEngine {
+func NewBotEngine(bybit bybitSDK.BybitServiceInterface, external external.ExternalInterface) BotEngine {
 	return &botengine{
-		Bybit: bybit,
+		Bybit:    bybit,
+		External: external,
 	}
 }
 
-func (b *botengine) InitBotEngine() {
-	rabbit := rabbitmq.NewRabbitMQConnection()
-	msg := <-rabbit.Listen("klines", "")
-
-	var kline CombinedData
-	err := json.Unmarshal(msg.Body, &kline)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tradeConfigList := external.NewExchangeExternal().ListTradeConfig()
-	var wg sync.WaitGroup
-
+func (b *botengine) InitBotEngine(kline rabbitmq.CombinedData) {
+	tradeConfigList := b.External.ListTradeConfig()
 	var start time.Time
 	start = time.Now()
 
 	for _, configs := range tradeConfigList.GetTradeConfig() {
 		if configs.Enabled {
-			wg.Add(1)
 			switch configs.Exchange {
-			// case BINANCE_EXCH:
-			// 	if configs.Enabled {
-			// 		switch configs.Modality {
-			// 		case SPOT_MODALITY:
-			// 			// go binancestrategies.BinanceOpenClose(*db, configs)
-			// 		}
-			// 	}
 			case BYBIT_EXCH:
 				if configs.Enabled {
 					switch configs.Modality {
@@ -65,20 +45,30 @@ func (b *botengine) InitBotEngine() {
 								switch configs.StrategyVariant {
 								case AVERAGE_PRICE_DAY:
 									if configs.StrategyVariantEnabled {
-										go b.ByBitAvgPriceDay(configs, kline, &wg)
+										if kline.Topic == "kline.1.BTCUSDT" && configs.ParitySymbol == "BTCUSDT" {
+											go b.ByBitAvgPriceDay(configs, &kline, nil)
+											fmt.Println("ByBitAvgPriceDay BTCUSDT")
+										}
+										if kline.Topic == "kline.1.ETHUSDT" && configs.ParitySymbol == "ETHUSDT" {
+											go b.ByBitAvgPriceDay(configs, &kline, nil)
+										}
 									}
 								case AVERAGE_PRICE_WEEK:
 									if configs.StrategyVariantEnabled {
-										// go b.ByBitAvgPriceWeek(configs, &wg)
+										// go b.ByBitAvgPriceWeek(configs, kline, &nil)
 									}
 								}
 							case CLOSE_OPEN:
+								fmt.Println("CLOSE_OPEN")
 								if configs.StrategyEnabled {
-									// go b.ByBitOpenClose(configs, &wg)
+									if kline.Topic == "kline.1.BTCUSDT" && configs.ParitySymbol == "BTCUSDT" {
+										go b.ByBitOpenClose(configs, &kline, nil)
+										fmt.Println("BybitOpenClose BTCUSDT")
+									}
 								}
 							case FAST_TRADE:
 								if configs.StrategyEnabled {
-									// go b.ByBitFastTrade(configs, &wg)
+									// go b.ByBitFastTrade(configs, kline, &wg)
 								}
 							}
 						}
@@ -88,7 +78,6 @@ func (b *botengine) InitBotEngine() {
 		}
 	}
 
-	wg.Wait()
 	if time.Since(start) > (time.Second * 1) {
 		ds := discordService.NewDiscordWebhook()
 		ds.SendNotification(&discordstructs.Notification{
