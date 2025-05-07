@@ -66,13 +66,14 @@ func (b *botengine) SellCoin(params *SellCoinParams) bool {
 			OrderPrice:  fmt.Sprintf("%.2f", params.ClosePrice),
 			OrderQty:    fmt.Sprintf("%v", params.CoinQuantity),
 			TimeInForce: "GTC",
+			// OrderLinkId: fmt.Sprintf("%d-SELL", params.Operation),
 		}
 
 		res := b.Bybit.CreateOrder(p)
 		log.Println("SELL ", res, " -> OP: ", params.Operation)
 
 		if res.RetCode == 0 {
-			orderId, _ := strconv.ParseInt(res.Result.OrderID, 10, 64)
+			orderId, _ := strconv.ParseInt(res.Data.OrderID, 10, 64)
 
 			b.External.CreateOperationHistory(&pb.CreateOperationHistoryRequest{
 				OperationHistory: &pb.OperationHistory{
@@ -83,7 +84,7 @@ func (b *botengine) SellCoin(params *SellCoinParams) bool {
 					StablePrice:         params.OpAmount,
 					StableQuantity:      params.OpAmount,
 					Fee:                 params.OpFee,
-					OperationExchangeId: string(orderId),
+					OperationExchangeId: uint64(orderId),
 				},
 			})
 		} else {

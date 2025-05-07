@@ -63,12 +63,13 @@ func (b *botengine) BuyCoin(params *BuyCoinParams) bool {
 			OrderPrice:  fmt.Sprintf("%v", params.ClosePrice),
 			OrderQty:    params.OpAmount,
 			TimeInForce: "GTC",
+			// OrderLinkId: fmt.Sprintf("%d-BUY", params.Operation),
 		})
 
 		log.Println("BUY ", res, " -> OP: ", params.Operation, params.Symbol)
 
 		if res.RetCode == 0 {
-			orderId, _ := strconv.ParseInt(res.Result.OrderID, 10, 64)
+			orderId, _ := strconv.ParseInt(res.Data.OrderID, 10, 64)
 			opAmount, _ := strconv.ParseFloat(params.OpAmount, 64)
 
 			b.External.CreateOperationHistory(&pb.CreateOperationHistoryRequest{
@@ -80,7 +81,7 @@ func (b *botengine) BuyCoin(params *BuyCoinParams) bool {
 					StablePrice:         opAmount,
 					StableQuantity:      opAmount,
 					Fee:                 params.OpFee,
-					OperationExchangeId: string(orderId),
+					OperationExchangeId: uint64(orderId),
 				},
 			})
 		} else {

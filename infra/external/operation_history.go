@@ -24,3 +24,21 @@ func (i *external) CreateOperationHistory(in *pb.CreateOperationHistoryRequest) 
 	}
 	return resp
 }
+
+func (i *external) GetOperationHistory(in *pb.GetOperationHistoryRequest) *pb.GetOperationHistoryResponse {
+	client := pb.NewExchangeServiceClient(i.Conn)
+	resp, err := client.GetOperationHistory(context.Background(), in)
+	if err != nil {
+		log.Fatalln("E-GOH", err)
+	}
+	return resp
+}
+
+func (i *external) UpdateOperationHistory(in *pb.UpdateOperationHistoryRequest) *pb.UpdateOperationHistoryResponse {
+	client := pb.NewExchangeServiceClient(i.Conn)
+	resp, err := client.UpdateOperationHistory(context.Background(), in)
+	if err != nil {
+		log.Fatalln("E-UOH", err)
+	}
+	return resp
+}

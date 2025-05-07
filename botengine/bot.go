@@ -59,7 +59,6 @@ func (b *botengine) InitBotEngine(kline rabbitmq.CombinedData) {
 									}
 								}
 							case CLOSE_OPEN:
-								fmt.Println("CLOSE_OPEN")
 								if configs.StrategyEnabled {
 									if kline.Topic == "kline.1.BTCUSDT" && configs.ParitySymbol == "BTCUSDT" {
 										go b.ByBitOpenClose(configs, &kline, nil)

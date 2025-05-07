@@ -16,6 +16,15 @@ func (i *external) ListAllOperation(in *pb.ListAllOperationRequest) *pb.ListAllO
 	return resp
 }
 
+func (i *external) GetOperation(in *pb.GetOperationRequest) *pb.GetOperationResponse {
+	client := pb.NewExchangeServiceClient(i.Conn)
+	resp, err := client.GetOperation(context.Background(), in)
+	if err != nil {
+		log.Fatalln("E-LAO", err)
+	}
+	return resp
+}
+
 func (i *external) ListOperationByPeriod(in *pb.ListOperationByPeriodRequest) *pb.ListOperationByPeriodResponse {
 	client := pb.NewExchangeServiceClient(i.Conn)
 	resp, err := client.ListOperationByPeriod(context.Background(), &pb.ListOperationByPeriodRequest{

@@ -2,6 +2,7 @@ package job
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -54,6 +55,8 @@ type job struct {
 type JobInterface interface {
 	InitJobs()
 	OpenLiveKline()
+	OpenLiveExec()
+	OpenLiveOrder()
 	AliveNotification(*chan bool)
 	SyncAssets(*chan bool)
 	SyncKlines()
@@ -73,10 +76,12 @@ func NewJobs() JobInterface {
 }
 
 func (j *job) InitJobs() {
-	go j.OpenLiveOrders()
-	j.SyncKlines()
-
 	go j.OpenLiveKline()
+	go j.OpenLiveOrder()
+
+	fmt.Println("Opening live streams")
+	j.SyncKlines()
+	time.Sleep(time.Second * 15)
 
 	go func() {
 		loopChannel := make(chan bool)

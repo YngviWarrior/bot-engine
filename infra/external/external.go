@@ -42,9 +42,14 @@ type ExternalInterface interface {
 	ListAllOperation(*pb.ListAllOperationRequest) *pb.ListAllOperationResponse
 	UpdateOperation(*pb.UpdateOperationRequest) *pb.UpdateOperationResponse
 	CreateOperation(*pb.CreateOperationRequest) *pb.CreateOperationResponse
+	GetOperation(*pb.GetOperationRequest) *pb.GetOperationResponse
 
 	GetLastBuyRegisterByOperation(*pb.GetLastBuyRegisterByOperationRequest) *pb.GetLastBuyRegisterByOperationResponse
+	GetOperationHistory(*pb.GetOperationHistoryRequest) *pb.GetOperationHistoryResponse
 	CreateOperationHistory(*pb.CreateOperationHistoryRequest) *pb.CreateOperationHistoryResponse
+	UpdateOperationHistory(*pb.UpdateOperationHistoryRequest) *pb.UpdateOperationHistoryResponse
+
+	ListTransactionType(*pb.ListTransactionTypeRequest) *pb.ListTransactionTypeResponse
 
 	Strategy(*pb.StrategyRequest) *pb.StrategyResponse
 }

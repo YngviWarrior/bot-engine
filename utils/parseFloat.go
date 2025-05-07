@@ -14,3 +14,13 @@ func ParseFloat(s string) (f float64) {
 
 	return
 }
+
+func ParseInt(s string) (f uint64) {
+	i, err := strconv.ParseInt(s, 10, 64)
+
+	if err != nil {
+		log.Panicln("PI 01: ", err)
+	}
+
+	return uint64(i)
+}
