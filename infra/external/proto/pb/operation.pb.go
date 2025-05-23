@@ -40,6 +40,7 @@ type Operation struct {
 	Audit           bool                   `protobuf:"varint,15,opt,name=audit,proto3" json:"audit,omitempty"`
 	Enabled         bool                   `protobuf:"varint,16,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	TimesCanceled   float64                `protobuf:"fixed64,17,opt,name=times_canceled,json=timesCanceled,proto3" json:"times_canceled,omitempty"`
+	InTransaction   bool                   `protobuf:"varint,18,opt,name=in_transaction,json=inTransaction,proto3" json:"in_transaction,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -193,6 +194,13 @@ func (x *Operation) GetTimesCanceled() float64 {
 	return 0
 }
 
+func (x *Operation) GetInTransaction() bool {
+	if x != nil {
+		return x.InTransaction
+	}
+	return false
+}
+
 type OperationJoin struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	Operation           uint64                 `protobuf:"varint,1,opt,name=operation,proto3" json:"operation,omitempty"`
@@ -214,6 +222,7 @@ type OperationJoin struct {
 	TimesCanceled       float64                `protobuf:"fixed64,17,opt,name=times_canceled,json=timesCanceled,proto3" json:"times_canceled,omitempty"`
 	StrategyName        uint64                 `protobuf:"varint,18,opt,name=strategy_name,json=strategyName,proto3" json:"strategy_name,omitempty"`
 	StrategyVariantName uint64                 `protobuf:"varint,19,opt,name=strategy_variant_name,json=strategyVariantName,proto3" json:"strategy_variant_name,omitempty"`
+	InTransaction       uint64                 `protobuf:"varint,20,opt,name=in_transaction,json=inTransaction,proto3" json:"in_transaction,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -381,6 +390,13 @@ func (x *OperationJoin) GetStrategyVariantName() uint64 {
 	return 0
 }
 
+func (x *OperationJoin) GetInTransaction() uint64 {
+	if x != nil {
+		return x.InTransaction
+	}
+	return 0
+}
+
 type GetOperationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OperationId   uint64                 `protobuf:"varint,1,opt,name=operationId,proto3" json:"operationId,omitempty"`
@@ -478,6 +494,7 @@ type ListOperationRequest struct {
 	Exchange        uint64                 `protobuf:"varint,5,opt,name=exchange,proto3" json:"exchange,omitempty"`
 	Closed          bool                   `protobuf:"varint,6,opt,name=closed,proto3" json:"closed,omitempty"`
 	Enabled         bool                   `protobuf:"varint,7,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	InTransaction   bool                   `protobuf:"varint,8,opt,name=in_transaction,json=inTransaction,proto3" json:"in_transaction,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -557,6 +574,13 @@ func (x *ListOperationRequest) GetClosed() bool {
 func (x *ListOperationRequest) GetEnabled() bool {
 	if x != nil {
 		return x.Enabled
+	}
+	return false
+}
+
+func (x *ListOperationRequest) GetInTransaction() bool {
+	if x != nil {
+		return x.InTransaction
 	}
 	return false
 }
@@ -961,7 +985,7 @@ var File_operation_proto protoreflect.FileDescriptor
 
 const file_operation_proto_rawDesc = "" +
 	"\n" +
-	"\x0foperation.proto\x12\x02pb\"\x89\x04\n" +
+	"\x0foperation.proto\x12\x02pb\"\xb0\x04\n" +
 	"\tOperation\x12\x1c\n" +
 	"\toperation\x18\x01 \x01(\x04R\toperation\x12\x12\n" +
 	"\x04user\x18\x02 \x01(\x04R\x04user\x12\x16\n" +
@@ -983,7 +1007,8 @@ const file_operation_proto_rawDesc = "" +
 	"\x06closed\x18\x0e \x01(\bR\x06closed\x12\x14\n" +
 	"\x05audit\x18\x0f \x01(\bR\x05audit\x12\x18\n" +
 	"\aenabled\x18\x10 \x01(\bR\aenabled\x12%\n" +
-	"\x0etimes_canceled\x18\x11 \x01(\x01R\rtimesCanceled\"\xe6\x04\n" +
+	"\x0etimes_canceled\x18\x11 \x01(\x01R\rtimesCanceled\x12%\n" +
+	"\x0ein_transaction\x18\x12 \x01(\bR\rinTransaction\"\x8d\x05\n" +
 	"\rOperationJoin\x12\x1c\n" +
 	"\toperation\x18\x01 \x01(\x04R\toperation\x12\x12\n" +
 	"\x04user\x18\x02 \x01(\x04R\x04user\x12\x16\n" +
@@ -1007,11 +1032,12 @@ const file_operation_proto_rawDesc = "" +
 	"\aenabled\x18\x10 \x01(\bR\aenabled\x12%\n" +
 	"\x0etimes_canceled\x18\x11 \x01(\x01R\rtimesCanceled\x12#\n" +
 	"\rstrategy_name\x18\x12 \x01(\x04R\fstrategyName\x122\n" +
-	"\x15strategy_variant_name\x18\x13 \x01(\x04R\x13strategyVariantName\"7\n" +
+	"\x15strategy_variant_name\x18\x13 \x01(\x04R\x13strategyVariantName\x12%\n" +
+	"\x0ein_transaction\x18\x14 \x01(\x04R\rinTransaction\"7\n" +
 	"\x13GetOperationRequest\x12 \n" +
 	"\voperationId\x18\x01 \x01(\x04R\voperationId\"C\n" +
 	"\x14GetOperationResponse\x12+\n" +
-	"\toperation\x18\x01 \x01(\v2\r.pb.OperationR\toperation\"\xd7\x01\n" +
+	"\toperation\x18\x01 \x01(\v2\r.pb.OperationR\toperation\"\xfe\x01\n" +
 	"\x14ListOperationRequest\x12\x12\n" +
 	"\x04user\x18\x01 \x01(\x04R\x04user\x12\x1a\n" +
 	"\bstrategy\x18\x02 \x01(\x04R\bstrategy\x12)\n" +
@@ -1019,7 +1045,8 @@ const file_operation_proto_rawDesc = "" +
 	"\x06parity\x18\x04 \x01(\x04R\x06parity\x12\x1a\n" +
 	"\bexchange\x18\x05 \x01(\x04R\bexchange\x12\x16\n" +
 	"\x06closed\x18\x06 \x01(\bR\x06closed\x12\x18\n" +
-	"\aenabled\x18\a \x01(\bR\aenabled\"F\n" +
+	"\aenabled\x18\a \x01(\bR\aenabled\x12%\n" +
+	"\x0ein_transaction\x18\b \x01(\bR\rinTransaction\"F\n" +
 	"\x15ListOperationResponse\x12-\n" +
 	"\n" +
 	"operations\x18\x01 \x03(\v2\r.pb.OperationR\n" +

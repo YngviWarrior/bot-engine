@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
+	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
+	"github.com/YngviWarrior/bot-engine/utils"
 	bybitSDK "github.com/YngviWarrior/bybit-sdk"
 	bybitstructs "github.com/YngviWarrior/bybit-sdk/byBitStructs"
 )
@@ -14,7 +17,7 @@ func (j *job) OpenLiveTrade(orderChannel <-chan *bybitstructs.OrderRequest) {
 	bybit := bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("BYBIT_SECRET_KEY"))
 	go bybit.LiveTrade(orderChannel, make(<-chan struct{}))
 
-	messages := j.RabbitMQ.Listen("", "execution")
+	messages := j.RabbitMQ.Listen("livetrade", "order.create")
 	for order := range messages {
 		fmt.Println(order)
 		var msg bybitstructs.OrderResponse
@@ -23,28 +26,52 @@ func (j *job) OpenLiveTrade(orderChannel <-chan *bybitstructs.OrderRequest) {
 			log.Println("Failed to parse msg", err)
 			continue
 		}
-		fmt.Println("Parsed msg", msg)
 
-		// j.ExchangeMS.UpdateOperation(&pb.UpdateOperationRequest{
-		// 	Operation: &pb.Operation{
-		// 		Operation:       op.GetOperation(),
-		// 		User:            op.GetUser(),
-		// 		Parity:          op.GetParity(),
-		// 		Exchange:        op.GetExchange(),
-		// 		Strategy:        op.GetStrategy(),
-		// 		StrategyVariant: op.GetStrategyVariant(),
-		// 		MtsStart:        op.GetMtsStart(),
-		// 		MtsFinish:       op.GetMtsFinish(),
-		// 		OpenPrice:       op.GetOpenPrice(),
-		// 		ClosePrice:      op.GetClosePrice(),
-		// 		InvestedAmount:  op.GetInvestedAmount(),
-		// 		ProfitAmount:    op.GetProfitAmount(),
-		// 		Profit:          op.GetProfit(),
-		// 		Closed:          op.GetClosed(),
-		// 		Audit:           op.GetAudit(),
-		// 		Enabled:         false,
-		// 		TimesCanceled:   op.GetTimesCanceled(),
-		// 	},
-		// })
+		opId := utils.ParseInt(strings.Fields(msg.ReqID)[1])
+
+		// Find order in Bybit API
+		orderHistory := bybit.OrderHistory(&bybitstructs.OrderHistoryParams{
+			OrderId:  msg.Data.OrderID,
+			Category: "spot",
+		})
+
+		var closed bool
+		switch orderHistory.Result.List[0].Side {
+		case "Buy":
+			closed = false
+		case "Sell":
+			closed = true
+		}
+
+		operation := j.ExchangeMS.GetOperation(&pb.GetOperationRequest{
+			OperationId: opId,
+		})
+
+		if operation.Operation == nil {
+			log.Panicln("OLT 01: No Operation Found")
+		}
+
+		j.ExchangeMS.UpdateOperation(&pb.UpdateOperationRequest{
+			Operation: &pb.Operation{
+				Operation:       opId,
+				User:            operation.GetOperation().GetUser(),
+				Parity:          operation.GetOperation().GetParity(),
+				Exchange:        operation.GetOperation().GetExchange(),
+				Strategy:        operation.GetOperation().GetStrategy(),
+				StrategyVariant: operation.GetOperation().GetStrategyVariant(),
+				MtsStart:        operation.GetOperation().GetMtsStart(),
+				MtsFinish:       operation.GetOperation().GetMtsFinish(),
+				OpenPrice:       operation.GetOperation().GetOpenPrice(),
+				ClosePrice:      operation.GetOperation().GetClosePrice(),
+				InvestedAmount:  operation.GetOperation().GetInvestedAmount(),
+				ProfitAmount:    operation.GetOperation().GetProfitAmount(),
+				Profit:          operation.GetOperation().GetProfit(),
+				Closed:          closed,
+				Audit:           operation.GetOperation().GetAudit(),
+				Enabled:         true,
+				InTransaction:   true,
+			},
+		})
+
 	}
 }

@@ -7,6 +7,7 @@ import (
 	external "github.com/YngviWarrior/bot-engine/infra/external"
 	"github.com/YngviWarrior/bot-engine/infra/rabbitmq"
 	bybitSDK "github.com/YngviWarrior/bybit-sdk"
+	bybitstructs "github.com/YngviWarrior/bybit-sdk/byBitStructs"
 	discordService "github.com/YngviWarrior/discord-webhook"
 	discordstructs "github.com/YngviWarrior/discord-webhook/discordStructs"
 )
@@ -18,12 +19,16 @@ type BotEngine interface {
 type botengine struct {
 	Bybit    bybitSDK.BybitServiceInterface
 	External external.ExternalInterface
+
+	OrderChannel chan *bybitstructs.OrderRequest
 }
 
-func NewBotEngine(bybit bybitSDK.BybitServiceInterface, external external.ExternalInterface) BotEngine {
+func NewBotEngine(bybit bybitSDK.BybitServiceInterface, external external.ExternalInterface, orderChannel chan *bybitstructs.OrderRequest) BotEngine {
 	return &botengine{
 		Bybit:    bybit,
 		External: external,
+
+		OrderChannel: orderChannel,
 	}
 }
 
@@ -46,28 +51,28 @@ func (b *botengine) InitBotEngine(kline rabbitmq.CombinedData) {
 								case AVERAGE_PRICE_DAY:
 									if configs.StrategyVariantEnabled {
 										if kline.Topic == "kline.1.BTCUSDT" && configs.ParitySymbol == "BTCUSDT" {
-											go b.ByBitAvgPriceDay(configs, &kline, nil)
+											b.ByBitAvgPriceDay(configs, &kline, nil)
 											fmt.Println("ByBitAvgPriceDay BTCUSDT")
 										}
 										if kline.Topic == "kline.1.ETHUSDT" && configs.ParitySymbol == "ETHUSDT" {
-											go b.ByBitAvgPriceDay(configs, &kline, nil)
+											b.ByBitAvgPriceDay(configs, &kline, nil)
 										}
 									}
 								case AVERAGE_PRICE_WEEK:
 									if configs.StrategyVariantEnabled {
-										// go b.ByBitAvgPriceWeek(configs, kline, &nil)
+										//  b.ByBitAvgPriceWeek(configs, kline, &nil)
 									}
 								}
 							case CLOSE_OPEN:
 								if configs.StrategyEnabled {
 									if kline.Topic == "kline.1.BTCUSDT" && configs.ParitySymbol == "BTCUSDT" {
-										go b.ByBitOpenClose(configs, &kline, nil)
+										b.ByBitOpenClose(configs, &kline, nil)
 										fmt.Println("BybitOpenClose BTCUSDT")
 									}
 								}
 							case FAST_TRADE:
 								if configs.StrategyEnabled {
-									// go b.ByBitFastTrade(configs, kline, &wg)
+									//  b.ByBitFastTrade(configs, kline, &wg)
 								}
 							}
 						}

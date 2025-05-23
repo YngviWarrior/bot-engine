@@ -2,14 +2,9 @@ package botengine
 
 import (
 	"fmt"
-	"log"
-	"strconv"
-	"time"
 
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
 	bybitstructs "github.com/YngviWarrior/bybit-sdk/byBitStructs"
-	discordService "github.com/YngviWarrior/discord-webhook"
-	discordstructs "github.com/YngviWarrior/discord-webhook/discordStructs"
 )
 
 type SellCoinParams struct {
@@ -58,41 +53,41 @@ func (b *botengine) SellCoin(params *SellCoinParams) bool {
 		// 	return false
 		// }
 	case 2: //ByBit
-		p := &bybitstructs.OrderParams{
-			Category:    "spot",
-			Symbol:      params.Symbol,
-			Side:        "Sell",
-			OrderType:   params.OrderType,
-			OrderPrice:  fmt.Sprintf("%.2f", params.ClosePrice),
-			OrderQty:    fmt.Sprintf("%v", params.CoinQuantity),
-			TimeInForce: "GTC",
-			// OrderLinkId: fmt.Sprintf("%d-SELL", params.Operation),
-		}
+		fmt.Printf("%+v\n", params)
+		b.External.CreateOperationHistory(&pb.CreateOperationHistoryRequest{
+			OperationHistory: &pb.OperationHistory{
+				Operation:           params.Operation,
+				TransactionType:     2,
+				CoinPrice:           params.ClosePrice,
+				CoinQuantity:        params.CoinQuantity,
+				StablePrice:         params.OpAmount,
+				StableQuantity:      params.OpAmount,
+				Fee:                 params.OpFee,
+				OperationExchangeId: fmt.Sprint(params.Operation),
+			},
+		})
 
-		res := b.Bybit.CreateOrder(p)
-		log.Println("SELL ", res, " -> OP: ", params.Operation)
-
-		if res.RetCode == 0 {
-			orderId, _ := strconv.ParseInt(res.Data.OrderID, 10, 64)
-
-			b.External.CreateOperationHistory(&pb.CreateOperationHistoryRequest{
-				OperationHistory: &pb.OperationHistory{
-					Operation:           params.Operation,
-					TransactionType:     2,
-					CoinPrice:           params.ClosePrice,
-					CoinQuantity:        params.CoinQuantity,
-					StablePrice:         params.OpAmount,
-					StableQuantity:      params.OpAmount,
-					Fee:                 params.OpFee,
-					OperationExchangeId: uint64(orderId),
+		timestamp := b.Bybit.GetServerTimestamp()
+		b.OrderChannel <- &bybitstructs.OrderRequest{
+			ReqID: fmt.Sprint("Sell ", params.Operation),
+			Header: bybitstructs.RequestHeader{
+				Timestamp:  fmt.Sprint(timestamp),
+				RecvWindow: "60000",
+				Referer:    "testnet",
+			},
+			Op: "order.create",
+			Args: []bybitstructs.OrderArgument{
+				{
+					Symbol:    params.Symbol,
+					Side:      "Sell",
+					OrderType: params.OrderType,
+					Qty:       fmt.Sprint(params.CoinQuantity),
+					// Price:       fmt.Sprintf("%v", params.ClosePrice),
+					Category:    "spot",
+					TimeInForce: "GTC",
+					OrderLinkId: fmt.Sprintf("%d-%v", params.Operation, timestamp),
 				},
-			})
-		} else {
-			discordService.NewDiscordWebhook().SendNotification(&discordstructs.Notification{
-				ChannelUrl: "/1127721886214795325/h00kYmfUrFTAIIIJasJi2MOnD0jPRmja_NYXoC1gsxSv4pxKKFBQGWsr9T0FDGIf_RCk",
-				Content:    fmt.Sprintf("(%v) <---> ERR Sell %v: Send %v <----> Get %v ", time.Now().Format("2006-01-02 15:04:05"), params.Operation, p, res),
-			})
-			return false
+			},
 		}
 	case 3: //TEST
 		// var p bBR.OrderParams

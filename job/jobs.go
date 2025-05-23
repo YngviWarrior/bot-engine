@@ -11,6 +11,7 @@ import (
 	"github.com/YngviWarrior/bot-engine/infra/external"
 	"github.com/YngviWarrior/bot-engine/infra/rabbitmq"
 	bybitSDK "github.com/YngviWarrior/bybit-sdk"
+	bybitstructs "github.com/YngviWarrior/bybit-sdk/byBitStructs"
 )
 
 type MarketData struct {
@@ -76,12 +77,15 @@ func NewJobs() JobInterface {
 }
 
 func (j *job) InitJobs() {
+	orderChannel := make(chan *bybitstructs.OrderRequest)
+
 	go j.OpenLiveKline()
 	go j.OpenLiveOrder()
+	go j.OpenLiveTrade(orderChannel)
 
 	fmt.Println("Opening live streams")
 	j.SyncKlines()
-	time.Sleep(time.Second * 15)
+	time.Sleep(time.Second * 5)
 
 	go func() {
 		loopChannel := make(chan bool)
@@ -162,8 +166,8 @@ func (j *job) InitJobs() {
 		}
 	}()
 
-	func() {
-		bot := botengine.NewBotEngine(bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("BYBIT_SECRET_KEY")), external.NewExchangeExternal())
+	func(orderChannel chan *bybitstructs.OrderRequest) {
+		bot := botengine.NewBotEngine(bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("BYBIT_SECRET_KEY")), external.NewExchangeExternal(), orderChannel)
 		rabbit := rabbitmq.NewRabbitMQConnection()
 
 		messages := rabbit.Listen("klines", "")
@@ -174,9 +178,23 @@ func (j *job) InitJobs() {
 				log.Println("Erro ao parsear mensagem:", err)
 				continue
 			}
-			go bot.InitBotEngine(kline)
+			bot.InitBotEngine(kline)
 		}
 
-	}()
+		// msg, ok := <-messages
+		// if !ok {
+		// 	log.Println("Canal de mensagens fechado")
+		// 	return
+		// }
 
+		// var kline rabbitmq.CombinedData
+		// err := json.Unmarshal(msg.Body, &kline)
+		// if err != nil {
+		// 	log.Println("Erro ao parsear mensagem:", err)
+		// 	return
+		// }
+
+		// go bot.InitBotEngine(kline)
+
+	}(orderChannel)
 }
