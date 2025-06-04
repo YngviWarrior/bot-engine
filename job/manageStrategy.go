@@ -31,11 +31,12 @@ func (j *job) createOperation(tradeConfig *pb.TradeConfig) {
 	)
 }
 
-func (j *job) ManageTradeConfigStrategy(loopChannel *chan bool) {
+func (j *job) ManageOperationCreationByStrategy(loopChannel *chan bool) {
 	tradeConfigList := j.ExchangeMS.ListTradeConfig()
 	operations := j.ExchangeMS.ListOperationEnabled(&pb.ListOperationEnabledRequest{})
 
 	for _, tradeConfig := range tradeConfigList.GetTradeConfig() {
+		var operationQuantityCount uint64 = 0
 		if !tradeConfig.GetEnabled() {
 			continue
 		}
@@ -44,21 +45,19 @@ func (j *job) ManageTradeConfigStrategy(loopChannel *chan bool) {
 			continue
 		}
 
-		hasOperation := false
-
 		for _, operation := range operations.GetOperations() {
 			if operation.GetUser() == tradeConfig.GetUser() &&
 				operation.GetExchange() == tradeConfig.GetExchange() &&
 				operation.GetParity() == tradeConfig.GetParity() &&
 				operation.GetStrategy() == tradeConfig.GetStrategy() &&
-				operation.GetStrategyVariant() == tradeConfig.GetStrategyVariant() {
-				hasOperation = true
+				operation.GetStrategyVariant() == tradeConfig.GetStrategyVariant() &&
+				!operation.GetClosed() && operation.GetEnabled() {
+				operationQuantityCount++
 			}
 		}
 
-		if !hasOperation {
+		if operationQuantityCount < tradeConfig.GetOperationQuantity() {
 			j.createOperation(tradeConfig)
-			hasOperation = false
 		}
 
 		// if tradeConfig.GetStrategy() == 3 {

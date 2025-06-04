@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-func TestManageTradeConfigStrategy(t *testing.T) {
+func TestManageOperationCreationByStrategy(t *testing.T) {
 	loopChannel := make(chan bool)
-	go jobs.ManageTradeConfigStrategy(&loopChannel)
+	go jobs.ManageOperationCreationByStrategy(&loopChannel)
 
 	time.Sleep(time.Second * 2)
 	t.Context().Done()

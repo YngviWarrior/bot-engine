@@ -48,7 +48,8 @@ func (b *botengine) OperateAvgPriceDay(operation *pb.OperationJoin, kline *rabbi
 	// isProfitable = true // For testing purposes, set isProfitable to true
 
 	fmt.Printf("%v AVG Day Op: %v -> SellCotation %v \n", time.Now().Format("2006-01-02 15:04:05"), operation.GetOperation(), sellCotation)
-	if wallet.GetWallet().GetAmount() > (50+1000) && newestRegister && !operation.InTransaction {
+	fmt.Println(currentPrice <= avg.GetDay(), "Current Price: ", currentPrice, "Average Day: ", avg.GetDay())
+	if wallet.GetWallet().GetAmount() > (50+1000) && newestRegister && !operation.InTransaction && currentPrice <= avg.GetDay() {
 		var bc BuyCoinParams
 
 		bc.Operation = operation.Operation
@@ -123,7 +124,6 @@ func (b *botengine) OperateAvgPriceDay(operation *pb.OperationJoin, kline *rabbi
 
 		switch os.Getenv("ENVIROMENT") {
 		case "server", "local", "testnet":
-			fmt.Println("Sell Coin Params: ", p)
 			if b.SellCoin(&p) {
 				b.External.UpdateOperation(&pb.UpdateOperationRequest{
 					Operation: &pb.Operation{

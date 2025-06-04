@@ -10,7 +10,7 @@ import (
 )
 
 func (j *job) OperationManager(loopChannel *chan bool) {
-	operations := j.ExchangeMS.ListAllOperation(&pb.ListAllOperationRequest{})
+	operations := j.ExchangeMS.ListOperationEnabled(&pb.ListOperationEnabledRequest{})
 	fmt.Println(operations)
 	for _, op := range operations.GetOperations() {
 		tradeConfig := j.ExchangeMS.GetTradeConfig(&pb.GetTradeConfigRequest{
@@ -33,6 +33,23 @@ func (j *job) OperationManager(loopChannel *chan bool) {
 		}
 
 		if op.GetEnabled() && !op.GetClosed() { // Desable
+			if tradeConfig.TradeConfig.GetEnabled() && tradeConfig.TradeConfig.GetOperationQuantity() > 0 {
+				j.ExchangeMS.UpdateTradeConfig(&pb.UpdateTradeConfigRequest{
+					TradeConfig:             uint64(tradeConfig.TradeConfig.GetTradeConfig()),
+					User:                    uint64(tradeConfig.TradeConfig.GetUser()),
+					Modality:                uint64(tradeConfig.TradeConfig.GetModality()),
+					Strategy:                uint64(tradeConfig.TradeConfig.GetStrategy()),
+					StrategyVariant:         uint64(tradeConfig.TradeConfig.GetStrategyVariant()),
+					Parity:                  uint64(tradeConfig.TradeConfig.GetParity()),
+					Exchange:                uint64(tradeConfig.TradeConfig.GetExchange()),
+					OperationQuantity:       uint64(tradeConfig.TradeConfig.GetOperationQuantity() - 1),
+					OperationAmount:         tradeConfig.TradeConfig.GetOperationAmount(),
+					DefaultProfitPercentage: tradeConfig.TradeConfig.GetDefaultProfitPercentage(),
+					WalletValueLimit:        tradeConfig.TradeConfig.GetWalletValueLimit(),
+					Enabled:                 tradeConfig.TradeConfig.GetEnabled(),
+				})
+			}
+			// Disable operation if current price is less than 1.3% of the open price
 			if currentPrice < (op.GetOpenPrice() * (1 - 0.013)) {
 				j.ExchangeMS.UpdateOperation(&pb.UpdateOperationRequest{
 					Operation: &pb.Operation{
@@ -54,23 +71,6 @@ func (j *job) OperationManager(loopChannel *chan bool) {
 						Enabled:         false,
 						TimesCanceled:   op.GetTimesCanceled(),
 					},
-				})
-			}
-
-			if tradeConfig.TradeConfig.GetEnabled() && tradeConfig.TradeConfig.GetOperationQuantity() > 0 {
-				j.ExchangeMS.UpdateTradeConfig(&pb.UpdateTradeConfigRequest{
-					TradeConfig:             uint64(tradeConfig.TradeConfig.GetTradeConfig()),
-					User:                    uint64(tradeConfig.TradeConfig.GetUser()),
-					Modality:                uint64(tradeConfig.TradeConfig.GetModality()),
-					Strategy:                uint64(tradeConfig.TradeConfig.GetStrategy()),
-					StrategyVariant:         uint64(tradeConfig.TradeConfig.GetStrategyVariant()),
-					Parity:                  uint64(tradeConfig.TradeConfig.GetParity()),
-					Exchange:                uint64(tradeConfig.TradeConfig.GetExchange()),
-					OperationQuantity:       uint64(tradeConfig.TradeConfig.GetOperationQuantity() - 1),
-					OperationAmount:         tradeConfig.TradeConfig.GetOperationAmount(),
-					DefaultProfitPercentage: tradeConfig.TradeConfig.GetDefaultProfitPercentage(),
-					WalletValueLimit:        tradeConfig.TradeConfig.GetWalletValueLimit(),
-					Enabled:                 tradeConfig.TradeConfig.GetEnabled(),
 				})
 			}
 

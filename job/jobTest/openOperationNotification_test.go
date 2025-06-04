@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-func TestOpenOperationManager(t *testing.T) {
+func TestOpenOperationNotification(t *testing.T) {
 	loopChan := make(chan bool)
-	go jobs.OpenOperationManager(&loopChan)
+	go jobs.OpenOperationNotification(&loopChan)
 
 	time.Sleep(time.Second * 2)
 	t.Context().Done()

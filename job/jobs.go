@@ -61,9 +61,9 @@ type JobInterface interface {
 	AliveNotification(*chan bool)
 	SyncAssets(*chan bool)
 	SyncKlines()
-	ManageTradeConfigStrategy(*chan bool)
+	ManageOperationCreationByStrategy(*chan bool)
 	CalculateProfit(*chan bool)
-	OpenOperationManager(*chan bool)
+	OpenOperationNotification(*chan bool)
 }
 
 func NewJobs() JobInterface {
@@ -103,7 +103,7 @@ func (j *job) InitJobs() {
 		loopChannel := make(chan bool)
 		go func(loopChannel *chan bool) {
 			for <-*loopChannel {
-				go j.ManageTradeConfigStrategy(loopChannel)
+				go j.ManageOperationCreationByStrategy(loopChannel)
 			}
 		}(&loopChannel)
 
@@ -114,7 +114,7 @@ func (j *job) InitJobs() {
 		loopChannel := make(chan bool)
 		go func(loopChannel *chan bool) {
 			for <-*loopChannel {
-				time.Sleep(time.Second * 30)
+				time.Sleep(time.Second * 60)
 				go j.CalculateProfit(loopChannel)
 			}
 		}(&loopChannel)
@@ -150,8 +150,8 @@ func (j *job) InitJobs() {
 		loopChannel := make(chan bool)
 		go func(loopChannel *chan bool) {
 			for <-*loopChannel {
-				time.Sleep(time.Second * 30)
-				go j.OpenOperationManager(loopChannel)
+				time.Sleep(time.Second * 60)
+				go j.OpenOperationNotification(loopChannel)
 			}
 		}(&loopChannel)
 

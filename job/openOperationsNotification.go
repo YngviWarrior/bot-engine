@@ -10,8 +10,8 @@ import (
 	discordstructs "github.com/YngviWarrior/discord-webhook/discordStructs"
 )
 
-func (j *job) OpenOperationManager(loopChannel *chan bool) {
-	operations := j.ExchangeMS.ListAllOperation(&pb.ListAllOperationRequest{})
+func (j *job) OpenOperationNotification(loopChannel *chan bool) {
+	operations := j.ExchangeMS.ListOperationEnabled(&pb.ListOperationEnabledRequest{})
 
 	for _, op := range operations.GetOperations() {
 		tradeConfig := j.ExchangeMS.GetTradeConfig(&pb.GetTradeConfigRequest{
@@ -23,10 +23,8 @@ func (j *job) OpenOperationManager(loopChannel *chan bool) {
 			Modality:        1,
 		})
 
-		// fmt.Println("AQUI1")
 		if op.Enabled && !op.Closed && op.OpenPrice > 0 {
-			// fmt.Println("AQUI2")
-			sellQuote := utils.FindSellCotation(op.InvestedAmount, (op.InvestedAmount / op.OpenPrice), 0.001, op.OpenPrice, tradeConfig.TradeConfig.DefaultProfitPercentage)
+			sellQuote := utils.FindSellCotation(op.InvestedAmount, (op.InvestedAmount / op.OpenPrice), 0.001, op.OpenPrice, tradeConfig.GetTradeConfig().GetDefaultProfitPercentage())
 
 			discord := discordService.NewDiscordWebhook()
 			discord.SendNotification(&discordstructs.Notification{
