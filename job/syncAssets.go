@@ -21,12 +21,12 @@ func (j *job) SyncAssets(loopChannel *chan bool) {
 		Exchange: 2,
 	})
 
-	if len(walletCoinList.Wallet) == 0 {
-		for _, coin := range coins.Coin {
+	if len(walletCoinList.GetWallet()) == 0 {
+		for _, coin := range coins.GetCoin() {
 			newWallet := j.ExchangeMS.CreateWallet(&pb.CreateWalletRequest{
 				Amount:   0,
 				Exchange: 2,
-				Coin:     coin.Coin,
+				Coin:     coin.GetCoin(),
 			})
 			if (newWallet == &pb.CreateWalletResponse{}) {
 				return
@@ -46,6 +46,7 @@ func (j *job) SyncAssets(loopChannel *chan bool) {
 
 	updateValues := []*pb.Wallet{}
 	for _, walletCoin := range walletCoinList.Wallet {
+		// fmt.Printf("%+v\n", bybitWallets)
 		for _, bybitWallet := range bybitWallets.Account.Balance {
 			if strings.ToUpper(walletCoin.Symbol) == bybitWallet.Coin {
 				updateValues = append(updateValues, &pb.Wallet{

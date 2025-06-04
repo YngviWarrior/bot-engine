@@ -13,7 +13,7 @@ import (
 func (j *job) OpenOperationManager(loopChannel *chan bool) {
 	operations := j.ExchangeMS.ListAllOperation(&pb.ListAllOperationRequest{})
 
-	for _, op := range operations.Operations {
+	for _, op := range operations.GetOperations() {
 		tradeConfig := j.ExchangeMS.GetTradeConfig(&pb.GetTradeConfigRequest{
 			User:            op.GetUser(),
 			Strategy:        op.GetStrategy(),

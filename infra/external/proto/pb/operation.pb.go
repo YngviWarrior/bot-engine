@@ -220,9 +220,11 @@ type OperationJoin struct {
 	Audit               bool                   `protobuf:"varint,15,opt,name=audit,proto3" json:"audit,omitempty"`
 	Enabled             bool                   `protobuf:"varint,16,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	TimesCanceled       float64                `protobuf:"fixed64,17,opt,name=times_canceled,json=timesCanceled,proto3" json:"times_canceled,omitempty"`
-	StrategyName        uint64                 `protobuf:"varint,18,opt,name=strategy_name,json=strategyName,proto3" json:"strategy_name,omitempty"`
-	StrategyVariantName uint64                 `protobuf:"varint,19,opt,name=strategy_variant_name,json=strategyVariantName,proto3" json:"strategy_variant_name,omitempty"`
-	InTransaction       uint64                 `protobuf:"varint,20,opt,name=in_transaction,json=inTransaction,proto3" json:"in_transaction,omitempty"`
+	ParitySymbol        string                 `protobuf:"bytes,18,opt,name=parity_symbol,json=paritySymbol,proto3" json:"parity_symbol,omitempty"`
+	ExchangeName        string                 `protobuf:"bytes,19,opt,name=exchange_name,json=exchangeName,proto3" json:"exchange_name,omitempty"`
+	StrategyName        string                 `protobuf:"bytes,20,opt,name=strategy_name,json=strategyName,proto3" json:"strategy_name,omitempty"`
+	StrategyVariantName string                 `protobuf:"bytes,21,opt,name=strategy_variant_name,json=strategyVariantName,proto3" json:"strategy_variant_name,omitempty"`
+	InTransaction       bool                   `protobuf:"varint,22,opt,name=in_transaction,json=inTransaction,proto3" json:"in_transaction,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -376,25 +378,39 @@ func (x *OperationJoin) GetTimesCanceled() float64 {
 	return 0
 }
 
-func (x *OperationJoin) GetStrategyName() uint64 {
+func (x *OperationJoin) GetParitySymbol() string {
+	if x != nil {
+		return x.ParitySymbol
+	}
+	return ""
+}
+
+func (x *OperationJoin) GetExchangeName() string {
+	if x != nil {
+		return x.ExchangeName
+	}
+	return ""
+}
+
+func (x *OperationJoin) GetStrategyName() string {
 	if x != nil {
 		return x.StrategyName
 	}
-	return 0
+	return ""
 }
 
-func (x *OperationJoin) GetStrategyVariantName() uint64 {
+func (x *OperationJoin) GetStrategyVariantName() string {
 	if x != nil {
 		return x.StrategyVariantName
 	}
-	return 0
+	return ""
 }
 
-func (x *OperationJoin) GetInTransaction() uint64 {
+func (x *OperationJoin) GetInTransaction() bool {
 	if x != nil {
 		return x.InTransaction
 	}
-	return 0
+	return false
 }
 
 type GetOperationRequest struct {
@@ -725,6 +741,86 @@ func (x *ListOperationByPeriodResponse) GetOperations() []*Operation {
 	return nil
 }
 
+type ListOperationEnabledRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListOperationEnabledRequest) Reset() {
+	*x = ListOperationEnabledRequest{}
+	mi := &file_operation_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOperationEnabledRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOperationEnabledRequest) ProtoMessage() {}
+
+func (x *ListOperationEnabledRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_operation_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOperationEnabledRequest.ProtoReflect.Descriptor instead.
+func (*ListOperationEnabledRequest) Descriptor() ([]byte, []int) {
+	return file_operation_proto_rawDescGZIP(), []int{8}
+}
+
+type ListOperationEnabledResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Operations    []*OperationJoin       `protobuf:"bytes,1,rep,name=operations,proto3" json:"operations,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListOperationEnabledResponse) Reset() {
+	*x = ListOperationEnabledResponse{}
+	mi := &file_operation_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOperationEnabledResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOperationEnabledResponse) ProtoMessage() {}
+
+func (x *ListOperationEnabledResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_operation_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOperationEnabledResponse.ProtoReflect.Descriptor instead.
+func (*ListOperationEnabledResponse) Descriptor() ([]byte, []int) {
+	return file_operation_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ListOperationEnabledResponse) GetOperations() []*OperationJoin {
+	if x != nil {
+		return x.Operations
+	}
+	return nil
+}
+
 type ListAllOperationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -733,7 +829,7 @@ type ListAllOperationRequest struct {
 
 func (x *ListAllOperationRequest) Reset() {
 	*x = ListAllOperationRequest{}
-	mi := &file_operation_proto_msgTypes[8]
+	mi := &file_operation_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -745,7 +841,7 @@ func (x *ListAllOperationRequest) String() string {
 func (*ListAllOperationRequest) ProtoMessage() {}
 
 func (x *ListAllOperationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_operation_proto_msgTypes[8]
+	mi := &file_operation_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -758,7 +854,7 @@ func (x *ListAllOperationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAllOperationRequest.ProtoReflect.Descriptor instead.
 func (*ListAllOperationRequest) Descriptor() ([]byte, []int) {
-	return file_operation_proto_rawDescGZIP(), []int{8}
+	return file_operation_proto_rawDescGZIP(), []int{10}
 }
 
 type ListAllOperationResponse struct {
@@ -770,7 +866,7 @@ type ListAllOperationResponse struct {
 
 func (x *ListAllOperationResponse) Reset() {
 	*x = ListAllOperationResponse{}
-	mi := &file_operation_proto_msgTypes[9]
+	mi := &file_operation_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -782,7 +878,7 @@ func (x *ListAllOperationResponse) String() string {
 func (*ListAllOperationResponse) ProtoMessage() {}
 
 func (x *ListAllOperationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_operation_proto_msgTypes[9]
+	mi := &file_operation_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -795,7 +891,7 @@ func (x *ListAllOperationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAllOperationResponse.ProtoReflect.Descriptor instead.
 func (*ListAllOperationResponse) Descriptor() ([]byte, []int) {
-	return file_operation_proto_rawDescGZIP(), []int{9}
+	return file_operation_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListAllOperationResponse) GetOperations() []*OperationJoin {
@@ -814,7 +910,7 @@ type UpdateOperationRequest struct {
 
 func (x *UpdateOperationRequest) Reset() {
 	*x = UpdateOperationRequest{}
-	mi := &file_operation_proto_msgTypes[10]
+	mi := &file_operation_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -826,7 +922,7 @@ func (x *UpdateOperationRequest) String() string {
 func (*UpdateOperationRequest) ProtoMessage() {}
 
 func (x *UpdateOperationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_operation_proto_msgTypes[10]
+	mi := &file_operation_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -839,7 +935,7 @@ func (x *UpdateOperationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOperationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateOperationRequest) Descriptor() ([]byte, []int) {
-	return file_operation_proto_rawDescGZIP(), []int{10}
+	return file_operation_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UpdateOperationRequest) GetOperation() *Operation {
@@ -858,7 +954,7 @@ type UpdateOperationResponse struct {
 
 func (x *UpdateOperationResponse) Reset() {
 	*x = UpdateOperationResponse{}
-	mi := &file_operation_proto_msgTypes[11]
+	mi := &file_operation_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -870,7 +966,7 @@ func (x *UpdateOperationResponse) String() string {
 func (*UpdateOperationResponse) ProtoMessage() {}
 
 func (x *UpdateOperationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_operation_proto_msgTypes[11]
+	mi := &file_operation_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -883,7 +979,7 @@ func (x *UpdateOperationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOperationResponse.ProtoReflect.Descriptor instead.
 func (*UpdateOperationResponse) Descriptor() ([]byte, []int) {
-	return file_operation_proto_rawDescGZIP(), []int{11}
+	return file_operation_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *UpdateOperationResponse) GetOperation() *Operation {
@@ -902,7 +998,7 @@ type CreateOperationRequest struct {
 
 func (x *CreateOperationRequest) Reset() {
 	*x = CreateOperationRequest{}
-	mi := &file_operation_proto_msgTypes[12]
+	mi := &file_operation_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -914,7 +1010,7 @@ func (x *CreateOperationRequest) String() string {
 func (*CreateOperationRequest) ProtoMessage() {}
 
 func (x *CreateOperationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_operation_proto_msgTypes[12]
+	mi := &file_operation_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -927,7 +1023,7 @@ func (x *CreateOperationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOperationRequest.ProtoReflect.Descriptor instead.
 func (*CreateOperationRequest) Descriptor() ([]byte, []int) {
-	return file_operation_proto_rawDescGZIP(), []int{12}
+	return file_operation_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateOperationRequest) GetOperation() *Operation {
@@ -946,7 +1042,7 @@ type CreateOperationResponse struct {
 
 func (x *CreateOperationResponse) Reset() {
 	*x = CreateOperationResponse{}
-	mi := &file_operation_proto_msgTypes[13]
+	mi := &file_operation_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -958,7 +1054,7 @@ func (x *CreateOperationResponse) String() string {
 func (*CreateOperationResponse) ProtoMessage() {}
 
 func (x *CreateOperationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_operation_proto_msgTypes[13]
+	mi := &file_operation_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -971,7 +1067,7 @@ func (x *CreateOperationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOperationResponse.ProtoReflect.Descriptor instead.
 func (*CreateOperationResponse) Descriptor() ([]byte, []int) {
-	return file_operation_proto_rawDescGZIP(), []int{13}
+	return file_operation_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CreateOperationResponse) GetOperation() *Operation {
@@ -1008,7 +1104,7 @@ const file_operation_proto_rawDesc = "" +
 	"\x05audit\x18\x0f \x01(\bR\x05audit\x12\x18\n" +
 	"\aenabled\x18\x10 \x01(\bR\aenabled\x12%\n" +
 	"\x0etimes_canceled\x18\x11 \x01(\x01R\rtimesCanceled\x12%\n" +
-	"\x0ein_transaction\x18\x12 \x01(\bR\rinTransaction\"\x8d\x05\n" +
+	"\x0ein_transaction\x18\x12 \x01(\bR\rinTransaction\"\xd7\x05\n" +
 	"\rOperationJoin\x12\x1c\n" +
 	"\toperation\x18\x01 \x01(\x04R\toperation\x12\x12\n" +
 	"\x04user\x18\x02 \x01(\x04R\x04user\x12\x16\n" +
@@ -1031,9 +1127,11 @@ const file_operation_proto_rawDesc = "" +
 	"\x05audit\x18\x0f \x01(\bR\x05audit\x12\x18\n" +
 	"\aenabled\x18\x10 \x01(\bR\aenabled\x12%\n" +
 	"\x0etimes_canceled\x18\x11 \x01(\x01R\rtimesCanceled\x12#\n" +
-	"\rstrategy_name\x18\x12 \x01(\x04R\fstrategyName\x122\n" +
-	"\x15strategy_variant_name\x18\x13 \x01(\x04R\x13strategyVariantName\x12%\n" +
-	"\x0ein_transaction\x18\x14 \x01(\x04R\rinTransaction\"7\n" +
+	"\rparity_symbol\x18\x12 \x01(\tR\fparitySymbol\x12#\n" +
+	"\rexchange_name\x18\x13 \x01(\tR\fexchangeName\x12#\n" +
+	"\rstrategy_name\x18\x14 \x01(\tR\fstrategyName\x122\n" +
+	"\x15strategy_variant_name\x18\x15 \x01(\tR\x13strategyVariantName\x12%\n" +
+	"\x0ein_transaction\x18\x16 \x01(\bR\rinTransaction\"7\n" +
 	"\x13GetOperationRequest\x12 \n" +
 	"\voperationId\x18\x01 \x01(\x04R\voperationId\"C\n" +
 	"\x14GetOperationResponse\x12+\n" +
@@ -1057,6 +1155,11 @@ const file_operation_proto_rawDesc = "" +
 	"\x1dListOperationByPeriodResponse\x12-\n" +
 	"\n" +
 	"operations\x18\x01 \x03(\v2\r.pb.OperationR\n" +
+	"operations\"\x1d\n" +
+	"\x1bListOperationEnabledRequest\"Q\n" +
+	"\x1cListOperationEnabledResponse\x121\n" +
+	"\n" +
+	"operations\x18\x01 \x03(\v2\x11.pb.OperationJoinR\n" +
 	"operations\"\x19\n" +
 	"\x17ListAllOperationRequest\"M\n" +
 	"\x18ListAllOperationResponse\x121\n" +
@@ -1084,7 +1187,7 @@ func file_operation_proto_rawDescGZIP() []byte {
 	return file_operation_proto_rawDescData
 }
 
-var file_operation_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_operation_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_operation_proto_goTypes = []any{
 	(*Operation)(nil),                     // 0: pb.Operation
 	(*OperationJoin)(nil),                 // 1: pb.OperationJoin
@@ -1094,27 +1197,30 @@ var file_operation_proto_goTypes = []any{
 	(*ListOperationResponse)(nil),         // 5: pb.ListOperationResponse
 	(*ListOperationByPeriodRequest)(nil),  // 6: pb.ListOperationByPeriodRequest
 	(*ListOperationByPeriodResponse)(nil), // 7: pb.ListOperationByPeriodResponse
-	(*ListAllOperationRequest)(nil),       // 8: pb.ListAllOperationRequest
-	(*ListAllOperationResponse)(nil),      // 9: pb.ListAllOperationResponse
-	(*UpdateOperationRequest)(nil),        // 10: pb.UpdateOperationRequest
-	(*UpdateOperationResponse)(nil),       // 11: pb.UpdateOperationResponse
-	(*CreateOperationRequest)(nil),        // 12: pb.CreateOperationRequest
-	(*CreateOperationResponse)(nil),       // 13: pb.CreateOperationResponse
+	(*ListOperationEnabledRequest)(nil),   // 8: pb.ListOperationEnabledRequest
+	(*ListOperationEnabledResponse)(nil),  // 9: pb.ListOperationEnabledResponse
+	(*ListAllOperationRequest)(nil),       // 10: pb.ListAllOperationRequest
+	(*ListAllOperationResponse)(nil),      // 11: pb.ListAllOperationResponse
+	(*UpdateOperationRequest)(nil),        // 12: pb.UpdateOperationRequest
+	(*UpdateOperationResponse)(nil),       // 13: pb.UpdateOperationResponse
+	(*CreateOperationRequest)(nil),        // 14: pb.CreateOperationRequest
+	(*CreateOperationResponse)(nil),       // 15: pb.CreateOperationResponse
 }
 var file_operation_proto_depIdxs = []int32{
 	0, // 0: pb.GetOperationResponse.operation:type_name -> pb.Operation
 	0, // 1: pb.ListOperationResponse.operations:type_name -> pb.Operation
 	0, // 2: pb.ListOperationByPeriodResponse.operations:type_name -> pb.Operation
-	1, // 3: pb.ListAllOperationResponse.operations:type_name -> pb.OperationJoin
-	0, // 4: pb.UpdateOperationRequest.operation:type_name -> pb.Operation
-	0, // 5: pb.UpdateOperationResponse.operation:type_name -> pb.Operation
-	0, // 6: pb.CreateOperationRequest.operation:type_name -> pb.Operation
-	0, // 7: pb.CreateOperationResponse.operation:type_name -> pb.Operation
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	1, // 3: pb.ListOperationEnabledResponse.operations:type_name -> pb.OperationJoin
+	1, // 4: pb.ListAllOperationResponse.operations:type_name -> pb.OperationJoin
+	0, // 5: pb.UpdateOperationRequest.operation:type_name -> pb.Operation
+	0, // 6: pb.UpdateOperationResponse.operation:type_name -> pb.Operation
+	0, // 7: pb.CreateOperationRequest.operation:type_name -> pb.Operation
+	0, // 8: pb.CreateOperationResponse.operation:type_name -> pb.Operation
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_operation_proto_init() }
@@ -1128,7 +1234,7 @@ func file_operation_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_operation_proto_rawDesc), len(file_operation_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

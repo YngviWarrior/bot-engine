@@ -2,7 +2,6 @@ package job
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -17,18 +16,15 @@ func (j *job) OpenLiveOrder() {
 	bybit := bybitSDK.NewBybitService(os.Getenv("BYBIT_API_KEY"), os.Getenv("BYBIT_SECRET_KEY"))
 	go bybit.LiveOrder(make(<-chan struct{}))
 
-	// transactionTypes := j.ExchangeMS.ListTransactionType(&pb.ListTransactionTypeRequest{})
-
 	messages := j.RabbitMQ.Listen("order", "order")
 	for order := range messages {
-		fmt.Println(string(order.Body))
 		var msg []bybitstructs.OrderDetail
 		err := json.Unmarshal(order.Body, &msg)
 		if err != nil {
 			log.Println("OLO 01: ", err)
 			continue
 		}
-		fmt.Printf("OLO: %+v\n ", msg)
+		// fmt.Printf("OLO: %+v\n ", msg)
 
 		parts := strings.Split(msg[0].OrderLinkID, "-")
 		linkId := parts[0]
@@ -37,7 +33,6 @@ func (j *job) OpenLiveOrder() {
 			OrderId: utils.ParseInt(linkId),
 		})
 
-		fmt.Printf("STATUS: %+v \n", msg[0].OrderStatus)
 		switch msg[0].OrderStatus {
 		case "New":
 			j.ExchangeMS.UpdateOperationHistory(&pb.UpdateOperationHistoryRequest{
@@ -70,11 +65,13 @@ func (j *job) OpenLiveOrder() {
 				},
 			})
 		case "Filled":
+			var fee float64 = 0
 			if msg[0].Side == "Sell" {
 				operation := j.ExchangeMS.GetOperation(&pb.GetOperationRequest{
 					OperationId: oph.GetOperationHistory().GetOperation(),
 				})
 
+				fee = utils.ParseFloat(msg[0].CumExecFee) / utils.ParseFloat(msg[0].AvgPrice)
 				j.ExchangeMS.UpdateOperation(&pb.UpdateOperationRequest{
 					Operation: &pb.Operation{
 						Operation:       operation.GetOperation().GetOperation(),
@@ -88,8 +85,8 @@ func (j *job) OpenLiveOrder() {
 						OpenPrice:       operation.GetOperation().GetOpenPrice(),
 						ClosePrice:      operation.GetOperation().GetClosePrice(),
 						InvestedAmount:  operation.GetOperation().GetInvestedAmount(),
-						ProfitAmount:    operation.GetOperation().GetProfitAmount(),
-						Profit:          operation.GetOperation().GetProfit(),
+						ProfitAmount:    0,
+						Profit:          0,
 						Closed:          true,
 						Audit:           operation.GetOperation().GetAudit(),
 						Enabled:         false,
@@ -97,6 +94,8 @@ func (j *job) OpenLiveOrder() {
 						InTransaction:   false,
 					},
 				})
+			} else {
+				fee = utils.ParseFloat(msg[0].CumExecFee)
 			}
 
 			j.ExchangeMS.UpdateOperationHistory(&pb.UpdateOperationHistoryRequest{
@@ -105,12 +104,12 @@ func (j *job) OpenLiveOrder() {
 					Operation:               oph.GetOperationHistory().GetOperation(),
 					TransactionType:         oph.GetOperationHistory().GetTransactionType(),
 					CoinPrice:               utils.ParseFloat(msg[0].AvgPrice),
-					CoinQuantity:            utils.ParseFloat(msg[0].CumExecQty),
+					CoinQuantity:            utils.ParseFloat(msg[0].CumExecQty) - fee,
 					StablePrice:             utils.ParseFloat(msg[0].CumExecValue),
 					StableQuantity:          utils.ParseFloat(msg[0].CumExecValue),
 					OperationExchangeId:     msg[0].OrderID,
 					OperationExchangeStatus: 3,
-					Fee:                     utils.ParseFloat(msg[0].CumExecFee),
+					Fee:                     fee,
 				},
 			})
 		case "Cancelled":

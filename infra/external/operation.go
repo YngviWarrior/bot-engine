@@ -7,6 +7,15 @@ import (
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
 )
 
+func (i *external) ListOperationEnabled(in *pb.ListOperationEnabledRequest) *pb.ListOperationEnabledResponse {
+	client := pb.NewExchangeServiceClient(i.Conn)
+	resp, err := client.ListOperationEnabled(context.Background(), in)
+	if err != nil {
+		log.Fatalln("E-LOE", err)
+	}
+	return resp
+}
+
 func (i *external) ListAllOperation(in *pb.ListAllOperationRequest) *pb.ListAllOperationResponse {
 	client := pb.NewExchangeServiceClient(i.Conn)
 	resp, err := client.ListAllOperation(context.Background(), in)
@@ -20,7 +29,7 @@ func (i *external) GetOperation(in *pb.GetOperationRequest) *pb.GetOperationResp
 	client := pb.NewExchangeServiceClient(i.Conn)
 	resp, err := client.GetOperation(context.Background(), in)
 	if err != nil {
-		log.Fatalln("E-LAO", err)
+		log.Fatalln("E-GO", err)
 	}
 	return resp
 }

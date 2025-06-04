@@ -38,6 +38,7 @@ type ExternalInterface interface {
 	UpdateAveragePrice(*pb.UpdateAveragePriceRequest) *pb.UpdateAveragePriceResponse
 
 	ListOperation(*pb.ListOperationRequest) *pb.ListOperationResponse
+	ListOperationEnabled(*pb.ListOperationEnabledRequest) *pb.ListOperationEnabledResponse
 	ListOperationByPeriod(*pb.ListOperationByPeriodRequest) *pb.ListOperationByPeriodResponse
 	ListAllOperation(*pb.ListAllOperationRequest) *pb.ListAllOperationResponse
 	UpdateOperation(*pb.UpdateOperationRequest) *pb.UpdateOperationResponse
@@ -45,6 +46,7 @@ type ExternalInterface interface {
 	GetOperation(*pb.GetOperationRequest) *pb.GetOperationResponse
 
 	GetLastBuyRegisterByOperation(*pb.GetLastBuyRegisterByOperationRequest) *pb.GetLastBuyRegisterByOperationResponse
+	ListOperationHistoryByOperation(*pb.ListOperationHistoryByOperationRequest) *pb.ListOperationHistoryByOperationResponse
 	GetOperationHistory(*pb.GetOperationHistoryRequest) *pb.GetOperationHistoryResponse
 	CreateOperationHistory(*pb.CreateOperationHistoryRequest) *pb.CreateOperationHistoryResponse
 	UpdateOperationHistory(*pb.UpdateOperationHistoryRequest) *pb.UpdateOperationHistoryResponse

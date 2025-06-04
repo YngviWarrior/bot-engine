@@ -16,6 +16,10 @@ github.com/YngviWarrior/bybit-sdk v0.0.0-20250514181020-81c524f18802 h1:o1SOV2Sl
 github.com/YngviWarrior/bybit-sdk v0.0.0-20250514181020-81c524f18802/go.mod h1:JOGOKhxctVjr1SE/3Pn+kXcXrEqbddkf3an7PYWw49s=
 github.com/YngviWarrior/bybit-sdk v0.0.0-20250514191430-d3f4af0fa0fb h1:qxaD3FU+riuJM6z4TzsPSVNDB5VH0U14xyuw2zrdsU0=
 github.com/YngviWarrior/bybit-sdk v0.0.0-20250514191430-d3f4af0fa0fb/go.mod h1:JOGOKhxctVjr1SE/3Pn+kXcXrEqbddkf3an7PYWw49s=
+github.com/YngviWarrior/bybit-sdk v0.0.0-20250523124426-81b035219ae0 h1:+gBSbSQVu+d220u/M67ONAoZuZ4NsX/+WGumuaq+SSA=
+github.com/YngviWarrior/bybit-sdk v0.0.0-20250523124426-81b035219ae0/go.mod h1:JOGOKhxctVjr1SE/3Pn+kXcXrEqbddkf3an7PYWw49s=
+github.com/YngviWarrior/bybit-sdk v0.0.0-20250531150928-c397a962ddfa h1:4UOss8oHZLTa3/BvHh11iaEHc6b02fvrOVLZgfQFJc4=
+github.com/YngviWarrior/bybit-sdk v0.0.0-20250531150928-c397a962ddfa/go.mod h1:JOGOKhxctVjr1SE/3Pn+kXcXrEqbddkf3an7PYWw49s=
 github.com/YngviWarrior/discord-webhook v0.0.0-20250125183153-f7befeb066ae h1:6wGwR7uumvKlxI2Gk5zB8A2KXjc9/SrFBmdfV1aCmqM=
 github.com/YngviWarrior/discord-webhook v0.0.0-20250125183153-f7befeb066ae/go.mod h1:foSgFGemJ0HR4vxYzxst5YLJy5aKh9eaZEjRfP7xHNY=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
@@ -66,9 +70,15 @@ google.golang.org/genproto/googleapis/rpc v0.0.0-20250428153025-10db94c68c34 h1:
 google.golang.org/genproto/googleapis/rpc v0.0.0-20250428153025-10db94c68c34/go.mod h1:qQ0YXyHHx3XkvlzUtpXDkS29lDSafHMZBAZDc03LQ3A=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20250512202823-5a2f75b736a9 h1:IkAfh6J/yllPtpYFU0zZN1hUPYdT0ogkBT/9hMxHjvg=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20250512202823-5a2f75b736a9/go.mod h1:qQ0YXyHHx3XkvlzUtpXDkS29lDSafHMZBAZDc03LQ3A=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20250519155744-55703ea1f237 h1:cJfm9zPbe1e873mHJzmQ1nwVEeRDU/T1wXDK2kUSU34=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20250519155744-55703ea1f237/go.mod h1:qQ0YXyHHx3XkvlzUtpXDkS29lDSafHMZBAZDc03LQ3A=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a h1:v2PbRU4K3llS09c7zodFpNePeamkAwG3mPrAery9VeE=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a/go.mod h1:qQ0YXyHHx3XkvlzUtpXDkS29lDSafHMZBAZDc03LQ3A=
 google.golang.org/grpc v1.72.0 h1:S7UkcVa60b5AAQTaO6ZKamFp1zMZSU0fGDK2WZLbBnM=
 google.golang.org/grpc v1.72.0/go.mod h1:wH5Aktxcg25y1I3w7H69nHfXdOG3UiadoBtjh3izSDM=
 google.golang.org/grpc v1.72.1 h1:HR03wO6eyZ7lknl75XlxABNVLLFc2PAb6mHlYh756mA=
 google.golang.org/grpc v1.72.1/go.mod h1:wH5Aktxcg25y1I3w7H69nHfXdOG3UiadoBtjh3izSDM=
+google.golang.org/grpc v1.72.2 h1:TdbGzwb82ty4OusHWepvFWGLgIbNo1/SUynEN0ssqv8=
+google.golang.org/grpc v1.72.2/go.mod h1:wH5Aktxcg25y1I3w7H69nHfXdOG3UiadoBtjh3izSDM=
 google.golang.org/protobuf v1.36.6 h1:z1NpPI8ku2WgiWnf+t9wTPsn6eP1L7ksHUlkfLvd9xY=
 google.golang.org/protobuf v1.36.6/go.mod h1:jduwjTPXsFjZGTmRluh+L6NjiWu7pchiJ2/5YcXBHnY=

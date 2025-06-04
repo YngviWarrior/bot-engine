@@ -5,6 +5,7 @@ import (
 	"time"
 
 	external "github.com/YngviWarrior/bot-engine/infra/external"
+	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
 	"github.com/YngviWarrior/bot-engine/infra/rabbitmq"
 	bybitSDK "github.com/YngviWarrior/bybit-sdk"
 	bybitstructs "github.com/YngviWarrior/bybit-sdk/byBitStructs"
@@ -33,60 +34,28 @@ func NewBotEngine(bybit bybitSDK.BybitServiceInterface, external external.Extern
 }
 
 func (b *botengine) InitBotEngine(kline rabbitmq.CombinedData) {
-	tradeConfigList := b.External.ListTradeConfig()
-	var start time.Time
-	start = time.Now()
+	start := time.Now()
 
-	for _, configs := range tradeConfigList.GetTradeConfig() {
-		if configs.Enabled {
-			switch configs.Exchange {
-			case BYBIT_EXCH:
-				if configs.Enabled {
-					switch configs.Modality {
-					case SPOT_MODALITY:
-						if configs.StrategyEnabled {
-							switch configs.Strategy {
-							case AVERAGE_PRICE:
-								switch configs.StrategyVariant {
-								case AVERAGE_PRICE_DAY:
-									if configs.StrategyVariantEnabled {
-										if kline.Topic == "kline.1.BTCUSDT" && configs.ParitySymbol == "BTCUSDT" {
-											b.ByBitAvgPriceDay(configs, &kline, nil)
-											fmt.Println("ByBitAvgPriceDay BTCUSDT")
-										}
-										if kline.Topic == "kline.1.ETHUSDT" && configs.ParitySymbol == "ETHUSDT" {
-											b.ByBitAvgPriceDay(configs, &kline, nil)
-										}
-									}
-								case AVERAGE_PRICE_WEEK:
-									if configs.StrategyVariantEnabled {
-										//  b.ByBitAvgPriceWeek(configs, kline, &nil)
-									}
-								}
-							case CLOSE_OPEN:
-								if configs.StrategyEnabled {
-									if kline.Topic == "kline.1.BTCUSDT" && configs.ParitySymbol == "BTCUSDT" {
-										b.ByBitOpenClose(configs, &kline, nil)
-										fmt.Println("BybitOpenClose BTCUSDT")
-									}
-								}
-							case FAST_TRADE:
-								if configs.StrategyEnabled {
-									//  b.ByBitFastTrade(configs, kline, &wg)
-								}
-							}
-						}
-					}
-				}
+	operations := b.External.ListOperationEnabled(&pb.ListOperationEnabledRequest{})
+	// fmt.Println("Operations: ", operations.Operations)
+	for _, operation := range operations.GetOperations() {
+		if operation.Strategy == 1 {
+			if kline.Topic == "kline.1.BTCUSDT" {
+				b.ByBitAvgPriceDay(operation, &kline, nil)
+				fmt.Println("ByBitAvgPriceDay BTCUSDT")
+			}
+		} else if operation.Strategy == 2 {
+			if kline.Topic == "kline.1.BTCUSDT" {
+				b.ByBitOpenClose(operation, &kline, nil)
+				fmt.Println("ByBitOpenClose BTCUSDT")
 			}
 		}
 	}
 
-	if time.Since(start) > (time.Second * 1) {
-		ds := discordService.NewDiscordWebhook()
-		ds.SendNotification(&discordstructs.Notification{
-			ChannelUrl: "/1127722138414092431/h13r0Wy77BUwmrvZtWdtvTRlmMjVetXDMVI1VDaJF13zOg6iZUh888FGk7vrR2fwTOa-",
-			Content:    fmt.Sprintf("(%v) Loop estretégias executadas em : %v \n", time.Now().Format("2006-01-02 15:04:05"), time.Since(start)),
-		})
-	}
+	ds := discordService.NewDiscordWebhook()
+	ds.SendNotification(&discordstructs.Notification{
+		ChannelUrl: "/1127722138414092431/h13r0Wy77BUwmrvZtWdtvTRlmMjVetXDMVI1VDaJF13zOg6iZUh888FGk7vrR2fwTOa-",
+		Content:    fmt.Sprintf("🕒 [%s] Tempo de execução do loop de estratégias: %v\n", time.Now().Format("2006-01-02 15:04:05"), time.Since(start)),
+	})
+
 }

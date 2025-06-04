@@ -25,6 +25,14 @@ message GetOperationHistoryResponse {
     OperationHistory OperationHistory = 1;
 }
 
+message ListOperationHistoryByOperationRequest {
+    uint64 Operation = 1;
+}
+
+message ListOperationHistoryByOperationResponse {
+    repeated OperationHistory OperationHistory = 1;
+}
+
 message GetLastBuyRegisterByOperationRequest {
     uint64 Operation = 1;
 }

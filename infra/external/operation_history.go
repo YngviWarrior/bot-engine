@@ -7,6 +7,15 @@ import (
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
 )
 
+func (i *external) ListOperationHistoryByOperation(in *pb.ListOperationHistoryByOperationRequest) *pb.ListOperationHistoryByOperationResponse {
+	client := pb.NewExchangeServiceClient(i.Conn)
+	resp, err := client.ListOperationHistoryByOperation(context.Background(), in)
+	if err != nil {
+		log.Fatalln("E-LOHBO", err)
+	}
+	return resp
+}
+
 func (i *external) GetLastBuyRegisterByOperation(in *pb.GetLastBuyRegisterByOperationRequest) *pb.GetLastBuyRegisterByOperationResponse {
 	client := pb.NewExchangeServiceClient(i.Conn)
 	resp, err := client.GetLastBuyRegisterByOperation(context.Background(), in)

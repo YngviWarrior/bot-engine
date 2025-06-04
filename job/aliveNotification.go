@@ -31,6 +31,6 @@ func (j *job) AliveNotification(loopChannel *chan bool) {
 	notify.Content = fmt.Sprintf("%v Greetings! Bot Container is up!", time.Now().Format("2006-01-02 15:04:05"))
 
 	service.SendNotification(&notify)
-	time.Sleep(time.Minute * 5)
+
 	*loopChannel <- true
 }

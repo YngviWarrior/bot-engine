@@ -62,7 +62,7 @@ type JobInterface interface {
 	SyncAssets(*chan bool)
 	SyncKlines()
 	ManageTradeConfigStrategy(*chan bool)
-	CalculateProfit()
+	CalculateProfit(*chan bool)
 	OpenOperationManager(*chan bool)
 }
 
@@ -89,81 +89,73 @@ func (j *job) InitJobs() {
 
 	go func() {
 		loopChannel := make(chan bool)
-		go j.CalculateAveragePrices(&loopChannel)
+		go func(loopChannel *chan bool) {
+			for <-*loopChannel {
+				time.Sleep(time.Second * 10)
+				go j.CalculateAveragePrices(loopChannel)
+			}
+		}(&loopChannel)
 
-		for <-loopChannel {
-			time.Sleep(time.Second * 1)
-			go j.CalculateAveragePrices(&loopChannel)
-		}
+		loopChannel <- true
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		go j.OpenOperationManager(&loopChannel)
+		go func(loopChannel *chan bool) {
+			for <-*loopChannel {
+				go j.ManageTradeConfigStrategy(loopChannel)
+			}
+		}(&loopChannel)
 
-		for <-loopChannel {
-			time.Sleep(time.Second * 1)
-			go j.OpenOperationManager(&loopChannel)
-		}
+		loopChannel <- true
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		go j.ManageTradeConfigStrategy(&loopChannel)
+		go func(loopChannel *chan bool) {
+			for <-*loopChannel {
+				time.Sleep(time.Second * 30)
+				go j.CalculateProfit(loopChannel)
+			}
+		}(&loopChannel)
 
-		for <-loopChannel {
-			time.Sleep(time.Second * 1)
-			go j.ManageTradeConfigStrategy(&loopChannel)
-		}
+		loopChannel <- true
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		go j.CalculateProfit()
+		go func(loopChannel *chan bool) {
+			for <-*loopChannel {
+				time.Sleep(time.Minute * 5)
+				go j.AliveNotification(loopChannel)
+			}
+		}(&loopChannel)
 
-		for <-loopChannel {
-			time.Sleep(time.Minute * 2)
-			go j.CalculateProfit()
-		}
+		loopChannel <- true
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		go j.ManageTradeConfigStrategy(&loopChannel)
+		go func(loopChannel *chan bool) {
+			for <-*loopChannel {
+				time.Sleep(time.Second * 15)
+				go j.SyncAssets(loopChannel)
+			}
+		}(&loopChannel)
 
-		for <-loopChannel {
-			time.Sleep(time.Second * 1)
-			go j.ManageTradeConfigStrategy(&loopChannel)
-		}
+		loopChannel <- true
 	}()
 
 	go func() {
 		loopChannel := make(chan bool)
-		go j.AliveNotification(&loopChannel)
+		go func(loopChannel *chan bool) {
+			for <-*loopChannel {
+				time.Sleep(time.Second * 30)
+				go j.OpenOperationManager(loopChannel)
+			}
+		}(&loopChannel)
 
-		for <-loopChannel {
-			go j.AliveNotification(&loopChannel)
-		}
-	}()
-
-	go func() {
-		loopChannel := make(chan bool)
-		go j.SyncAssets(&loopChannel)
-
-		for <-loopChannel {
-			time.Sleep(time.Second * 30)
-			go j.SyncAssets(&loopChannel)
-		}
-	}()
-
-	go func() {
-		loopChannel := make(chan bool)
-		go j.OpenOperationManager(&loopChannel)
-
-		for <-loopChannel {
-			time.Sleep(time.Second * 30)
-			go j.OpenOperationManager(&loopChannel)
-		}
+		loopChannel <- true
 	}()
 
 	func(orderChannel chan *bybitstructs.OrderRequest) {
