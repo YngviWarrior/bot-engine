@@ -2,8 +2,10 @@ package job
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
@@ -35,18 +37,20 @@ func (j *job) OpenLiveOrder() {
 
 		switch msg[0].OrderStatus {
 		case "New":
+			fmt.Println("Aqui")
+			fmt.Println(msg[0])
 			j.ExchangeMS.UpdateOperationHistory(&pb.UpdateOperationHistoryRequest{
 				OperationHistory: &pb.OperationHistory{
 					OperationHistory:        oph.GetOperationHistory().GetOperationHistory(),
 					Operation:               oph.GetOperationHistory().GetOperation(),
 					TransactionType:         oph.GetOperationHistory().GetTransactionType(),
-					CoinPrice:               utils.ParseFloat(msg[0].AvgPrice),
-					CoinQuantity:            utils.ParseFloat(msg[0].CumExecQty),
-					StablePrice:             utils.ParseFloat(msg[0].CumExecValue),
-					StableQuantity:          utils.ParseFloat(msg[0].CumExecValue),
+					CoinPrice:               msg[0].AvgPrice,
+					CoinQuantity:            msg[0].CumExecQty,
+					StablePrice:             msg[0].CumExecValue,
+					StableQuantity:          msg[0].CumExecValue,
 					OperationExchangeId:     msg[0].OrderID,
-					OperationExchangeStatus: 2,
-					Fee:                     utils.ParseFloat(msg[0].CumExecFee),
+					OperationExchangeStatus: 1,
+					Fee:                     msg[0].CumExecFee,
 				},
 			})
 		case "PartiallyFilled":
@@ -55,23 +59,32 @@ func (j *job) OpenLiveOrder() {
 					OperationHistory:        oph.GetOperationHistory().GetOperationHistory(),
 					Operation:               oph.GetOperationHistory().GetOperation(),
 					TransactionType:         oph.GetOperationHistory().GetTransactionType(),
-					CoinPrice:               utils.ParseFloat(msg[0].AvgPrice),
-					CoinQuantity:            utils.ParseFloat(msg[0].CumExecQty),
-					StablePrice:             utils.ParseFloat(msg[0].CumExecValue),
-					StableQuantity:          utils.ParseFloat(msg[0].CumExecValue),
+					CoinPrice:               msg[0].AvgPrice,
+					CoinQuantity:            msg[0].CumExecQty,
+					StablePrice:             msg[0].CumExecValue,
+					StableQuantity:          msg[0].CumExecValue,
 					OperationExchangeId:     msg[0].OrderID,
 					OperationExchangeStatus: 2,
-					Fee:                     utils.ParseFloat(msg[0].CumExecFee),
+					Fee:                     msg[0].CumExecFee,
 				},
 			})
 		case "Filled":
-			var fee float64 = 0
+			var fee float64
 			if msg[0].Side == "Sell" {
 				operation := j.ExchangeMS.GetOperation(&pb.GetOperationRequest{
 					OperationId: oph.GetOperationHistory().GetOperation(),
 				})
 
-				fee = utils.ParseFloat(msg[0].CumExecFee) / utils.ParseFloat(msg[0].AvgPrice)
+				cumExecFee, err := strconv.ParseFloat(msg[0].CumExecFee, 64)
+				if err != nil {
+					log.Panic("OLO 02: ", err)
+				}
+				avgPrice, err := strconv.ParseFloat(msg[0].AvgPrice, 64)
+				if err != nil {
+					log.Panic("OLO 02: ", err)
+				}
+
+				fee = cumExecFee / avgPrice
 				j.ExchangeMS.UpdateOperation(&pb.UpdateOperationRequest{
 					Operation: &pb.Operation{
 						Operation:       operation.GetOperation().GetOperation(),
@@ -85,8 +98,8 @@ func (j *job) OpenLiveOrder() {
 						OpenPrice:       operation.GetOperation().GetOpenPrice(),
 						ClosePrice:      operation.GetOperation().GetClosePrice(),
 						InvestedAmount:  operation.GetOperation().GetInvestedAmount(),
-						ProfitAmount:    0,
-						Profit:          0,
+						ProfitAmount:    operation.GetOperation().GetProfitAmount(),
+						Profit:          operation.GetOperation().GetProfit(),
 						Closed:          true,
 						Audit:           operation.GetOperation().GetAudit(),
 						Enabled:         false,
@@ -95,7 +108,16 @@ func (j *job) OpenLiveOrder() {
 					},
 				})
 			} else {
-				fee = utils.ParseFloat(msg[0].CumExecFee)
+				cumExecFee, err := strconv.ParseFloat(msg[0].CumExecFee, 64)
+				if err != nil {
+					log.Panic("OLO 02: ", err)
+				}
+				fee = cumExecFee
+			}
+
+			cumExecQty, err := strconv.ParseFloat(msg[0].CumExecQty, 64)
+			if err != nil {
+				log.Panic("OLO 03 : ", err)
 			}
 
 			j.ExchangeMS.UpdateOperationHistory(&pb.UpdateOperationHistoryRequest{
@@ -103,13 +125,13 @@ func (j *job) OpenLiveOrder() {
 					OperationHistory:        oph.GetOperationHistory().GetOperationHistory(),
 					Operation:               oph.GetOperationHistory().GetOperation(),
 					TransactionType:         oph.GetOperationHistory().GetTransactionType(),
-					CoinPrice:               utils.ParseFloat(msg[0].AvgPrice),
-					CoinQuantity:            utils.ParseFloat(msg[0].CumExecQty) - fee,
-					StablePrice:             utils.ParseFloat(msg[0].CumExecValue),
-					StableQuantity:          utils.ParseFloat(msg[0].CumExecValue),
+					CoinPrice:               msg[0].AvgPrice,
+					CoinQuantity:            fmt.Sprintf("%0.11f", cumExecQty-fee),
+					StablePrice:             msg[0].CumExecValue,
+					StableQuantity:          msg[0].CumExecValue,
 					OperationExchangeId:     msg[0].OrderID,
 					OperationExchangeStatus: 3,
-					Fee:                     fee,
+					Fee:                     fmt.Sprintf("%0.11f", fee),
 				},
 			})
 		case "Cancelled":
@@ -145,13 +167,13 @@ func (j *job) OpenLiveOrder() {
 					OperationHistory:        oph.GetOperationHistory().GetOperationHistory(),
 					Operation:               oph.GetOperationHistory().GetOperation(),
 					TransactionType:         oph.GetOperationHistory().GetTransactionType(),
-					CoinPrice:               utils.ParseFloat(msg[0].Price),
-					CoinQuantity:            utils.ParseFloat(msg[0].Qty),
-					StablePrice:             utils.ParseFloat(msg[0].CumExecValue),
-					StableQuantity:          utils.ParseFloat(msg[0].CumExecValue),
+					CoinPrice:               msg[0].Price,
+					CoinQuantity:            msg[0].Qty,
+					StablePrice:             msg[0].CumExecValue,
+					StableQuantity:          msg[0].CumExecValue,
 					OperationExchangeId:     msg[0].OrderID,
 					OperationExchangeStatus: 4,
-					Fee:                     utils.ParseFloat(msg[0].CumExecFee),
+					Fee:                     msg[0].CumExecFee,
 				},
 			})
 		}

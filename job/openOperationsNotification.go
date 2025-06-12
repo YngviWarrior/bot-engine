@@ -2,6 +2,8 @@ package job
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 	"time"
 
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
@@ -23,8 +25,17 @@ func (j *job) OpenOperationNotification(loopChannel *chan bool) {
 			Modality:        1,
 		})
 
-		if op.Enabled && !op.Closed && op.OpenPrice > 0 {
-			sellQuote := utils.FindSellCotation(op.InvestedAmount, (op.InvestedAmount / op.OpenPrice), 0.001, op.OpenPrice, tradeConfig.GetTradeConfig().GetDefaultProfitPercentage())
+		if op.Enabled && !op.Closed && op.OpenPrice > "0" {
+			openPrice, err := strconv.ParseFloat(op.GetOpenPrice(), 64)
+			if err != nil {
+				log.Panic("OON 01: ", err)
+			}
+			investedAmount, err := strconv.ParseFloat(op.GetInvestedAmount(), 64)
+			if err != nil {
+				log.Panic("OON 02: ", err)
+			}
+
+			sellQuote := utils.FindSellCotation(op.GetInvestedAmount(), fmt.Sprintf("%0.11f", investedAmount/openPrice), "0.001", op.GetOpenPrice(), tradeConfig.GetTradeConfig().GetDefaultProfitPercentage())
 
 			discord := discordService.NewDiscordWebhook()
 			discord.SendNotification(&discordstructs.Notification{

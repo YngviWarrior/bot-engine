@@ -64,6 +64,7 @@ type JobInterface interface {
 	ManageOperationCreationByStrategy(*chan bool)
 	CalculateProfit(*chan bool)
 	OpenOperationNotification(*chan bool)
+	CalcAvgPrice(*chan bool)
 }
 
 func NewJobs() JobInterface {
@@ -92,7 +93,7 @@ func (j *job) InitJobs() {
 		go func(loopChannel *chan bool) {
 			for <-*loopChannel {
 				time.Sleep(time.Second * 10)
-				go j.CalculateAveragePrices(loopChannel)
+				go j.CalcAvgPrice(loopChannel)
 			}
 		}(&loopChannel)
 

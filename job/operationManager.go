@@ -2,6 +2,8 @@ package job
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 	"time"
 
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
@@ -32,6 +34,11 @@ func (j *job) OperationManager(loopChannel *chan bool) {
 			currentPrice = float64(msg.Body[0])
 		}
 
+		openPrice, err := strconv.ParseFloat(op.GetOpenPrice(), 64)
+		if err != nil {
+			log.Panic("OM 01: ", err)
+		}
+
 		if op.GetEnabled() && !op.GetClosed() { // Desable
 			if tradeConfig.TradeConfig.GetEnabled() && tradeConfig.TradeConfig.GetOperationQuantity() > 0 {
 				j.ExchangeMS.UpdateTradeConfig(&pb.UpdateTradeConfigRequest{
@@ -50,7 +57,7 @@ func (j *job) OperationManager(loopChannel *chan bool) {
 				})
 			}
 			// Disable operation if current price is less than 1.3% of the open price
-			if currentPrice < (op.GetOpenPrice() * (1 - 0.013)) {
+			if currentPrice < (openPrice * (1 - 0.013)) {
 				j.ExchangeMS.UpdateOperation(&pb.UpdateOperationRequest{
 					Operation: &pb.Operation{
 						Operation:       op.GetOperation(),
@@ -80,7 +87,7 @@ func (j *job) OperationManager(loopChannel *chan bool) {
 				Content:    fmt.Sprintf("(%v) Operation %v with OpenPrice -> %v was Desabled.", time.Now().Format("2006-01-02 15:04:05"), op.GetOperation(), op.GetOpenPrice()),
 			})
 		} else { // Enable
-			if op.GetOpenPrice() <= currentPrice && op.GetOpenPrice() != 0 && !op.GetClosed() && op.GetEnabled() {
+			if openPrice <= currentPrice && openPrice != 0 && !op.GetClosed() && op.GetEnabled() {
 				j.ExchangeMS.UpdateOperation(&pb.UpdateOperationRequest{
 					Operation: &pb.Operation{
 						Operation:       op.GetOperation(),

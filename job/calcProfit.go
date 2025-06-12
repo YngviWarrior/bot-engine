@@ -2,6 +2,8 @@ package job
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 	"time"
 
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
@@ -26,10 +28,15 @@ func (j job) CalculateProfit(loopChannel *chan bool) {
 		if len(operationHistoryList.GetOperationHistory()) == 2 {
 			var operationProfit float64 = 0
 			for _, oph := range operationHistoryList.GetOperationHistory() {
+				stablePrice, err := strconv.ParseFloat(oph.StablePrice, 64)
+				if err != nil {
+					log.Panic("CP 01: ", err)
+				}
+
 				if oph.TransactionType == 1 { // Buy
-					operationProfit -= oph.StablePrice
+					operationProfit -= stablePrice
 				} else if oph.TransactionType == 2 { // Sell
-					operationProfit += oph.StablePrice
+					operationProfit += stablePrice
 				}
 			}
 			profit24H += operationProfit
@@ -52,10 +59,15 @@ func (j job) CalculateProfit(loopChannel *chan bool) {
 		if len(operationHistoryList.GetOperationHistory()) == 2 {
 			var operationProfit float64 = 0
 			for _, oph := range operationHistoryList.GetOperationHistory() {
+				stablePrice, err := strconv.ParseFloat(oph.StablePrice, 64)
+				if err != nil {
+					log.Panic("CP 01: ", err)
+				}
+
 				if oph.TransactionType == 1 { // Buy
-					operationProfit -= oph.StablePrice
+					operationProfit -= stablePrice
 				} else if oph.TransactionType == 2 { // Sell
-					operationProfit += oph.StablePrice
+					operationProfit += stablePrice
 				}
 			}
 			profit7D += operationProfit
@@ -78,10 +90,15 @@ func (j job) CalculateProfit(loopChannel *chan bool) {
 		if len(operationHistoryList.GetOperationHistory()) == 2 {
 			var operationProfit float64 = 0
 			for _, oph := range operationHistoryList.GetOperationHistory() {
+				stablePrice, err := strconv.ParseFloat(oph.StablePrice, 64)
+				if err != nil {
+					log.Panic("CP 01: ", err)
+				}
+
 				if oph.TransactionType == 1 { // Buy
-					operationProfit -= oph.StablePrice
+					operationProfit -= stablePrice
 				} else if oph.TransactionType == 2 { // Sell
-					operationProfit += oph.StablePrice
+					operationProfit += stablePrice
 				}
 			}
 			profit1M += operationProfit
@@ -104,10 +121,15 @@ func (j job) CalculateProfit(loopChannel *chan bool) {
 		if len(operationHistoryList.GetOperationHistory()) == 2 {
 			var operationProfit float64 = 0
 			for _, oph := range operationHistoryList.GetOperationHistory() {
+				stablePrice, err := strconv.ParseFloat(oph.StablePrice, 64)
+				if err != nil {
+					log.Panic("CP 01: ", err)
+				}
+
 				if oph.TransactionType == 1 { // Buy
-					operationProfit -= oph.StablePrice
+					operationProfit -= stablePrice
 				} else if oph.TransactionType == 2 { // Sell
-					operationProfit += oph.StablePrice
+					operationProfit += stablePrice
 				}
 			}
 			profitAllTime += operationProfit
