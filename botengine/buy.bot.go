@@ -4,18 +4,17 @@ import (
 	"fmt"
 
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
-	"github.com/YngviWarrior/bot-engine/utils"
 	bybitstructs "github.com/YngviWarrior/bybit-sdk/byBitStructs"
 )
 
 type BuyCoinParams struct {
 	Operation  uint64
-	ClosePrice float64
+	ClosePrice string
 	Exchange   uint64
 	OpAmount   string
 	Symbol     string
 	OrderType  string
-	OpFee      float64
+	OpFee      string
 }
 
 // var operationHistory repository.OperationHistoryRepositoryInterface = &repository.OperationHistoryRepository{}
@@ -52,14 +51,15 @@ func (b *botengine) BuyCoin(params *BuyCoinParams) bool {
 		fmt.Printf("%+v\n", params)
 		b.External.CreateOperationHistory(&pb.CreateOperationHistoryRequest{
 			OperationHistory: &pb.OperationHistory{
-				Operation:           params.Operation,
-				TransactionType:     1,
-				CoinPrice:           params.ClosePrice,
-				CoinQuantity:        0,
-				StablePrice:         utils.ParseFloat(params.OpAmount),
-				StableQuantity:      utils.ParseFloat(params.OpAmount),
-				Fee:                 params.OpFee,
-				OperationExchangeId: fmt.Sprint(params.Operation),
+				Operation:               params.Operation,
+				TransactionType:         1,
+				CoinPrice:               params.ClosePrice,
+				CoinQuantity:            "0",
+				StablePrice:             params.OpAmount,
+				StableQuantity:          params.OpAmount,
+				Fee:                     params.OpFee,
+				OperationExchangeId:     fmt.Sprint(params.Operation),
+				OperationExchangeStatus: 1,
 			},
 		})
 
@@ -69,16 +69,16 @@ func (b *botengine) BuyCoin(params *BuyCoinParams) bool {
 			Header: bybitstructs.RequestHeader{
 				Timestamp:  fmt.Sprint(timestamp),
 				RecvWindow: "60000",
-				Referer:    "testnet",
+				Referer:    "demo",
 			},
 			Op: "order.create",
 			Args: []bybitstructs.OrderArgument{
 				{
-					Symbol:    params.Symbol,
-					Side:      "Buy",
-					OrderType: params.OrderType,
-					Qty:       params.OpAmount,
-					// Price:       fmt.Sprintf("%v", params.ClosePrice),
+					Symbol:      params.Symbol,
+					Side:        "Buy",
+					OrderType:   params.OrderType,
+					Qty:         params.OpAmount,
+					Price:       fmt.Sprintf("%v", params.ClosePrice),
 					Category:    "spot",
 					TimeInForce: "GTC",
 					OrderLinkId: fmt.Sprintf("%d-%v", params.Operation, timestamp),

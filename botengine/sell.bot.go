@@ -9,11 +9,11 @@ import (
 
 type SellCoinParams struct {
 	Operation    uint64
-	ClosePrice   float64
-	CoinQuantity float64
+	ClosePrice   string
+	CoinQuantity string
 	Exchange     uint64
-	OpAmount     float64
-	OpFee        float64
+	OpAmount     string
+	OpFee        string
 	Symbol       string
 	OrderType    string
 }
@@ -56,14 +56,15 @@ func (b *botengine) SellCoin(params *SellCoinParams) bool {
 		fmt.Printf("%+v\n", params)
 		b.External.CreateOperationHistory(&pb.CreateOperationHistoryRequest{
 			OperationHistory: &pb.OperationHistory{
-				Operation:           params.Operation,
-				TransactionType:     2,
-				CoinPrice:           params.ClosePrice,
-				CoinQuantity:        params.CoinQuantity,
-				StablePrice:         params.OpAmount,
-				StableQuantity:      params.OpAmount,
-				Fee:                 params.OpFee,
-				OperationExchangeId: fmt.Sprint(params.Operation),
+				Operation:               params.Operation,
+				TransactionType:         2,
+				CoinPrice:               params.ClosePrice,
+				CoinQuantity:            params.CoinQuantity,
+				StablePrice:             params.OpAmount,
+				StableQuantity:          params.OpAmount,
+				Fee:                     params.OpFee,
+				OperationExchangeId:     fmt.Sprint(params.Operation),
+				OperationExchangeStatus: 1,
 			},
 		})
 
@@ -73,16 +74,16 @@ func (b *botengine) SellCoin(params *SellCoinParams) bool {
 			Header: bybitstructs.RequestHeader{
 				Timestamp:  fmt.Sprint(timestamp),
 				RecvWindow: "60000",
-				Referer:    "testnet",
+				Referer:    "demo",
 			},
 			Op: "order.create",
 			Args: []bybitstructs.OrderArgument{
 				{
-					Symbol:    params.Symbol,
-					Side:      "Sell",
-					OrderType: params.OrderType,
-					Qty:       fmt.Sprint(params.CoinQuantity),
-					// Price:       fmt.Sprintf("%v", params.ClosePrice),
+					Symbol:      params.Symbol,
+					Side:        "Sell",
+					OrderType:   params.OrderType,
+					Qty:         fmt.Sprint(params.CoinQuantity),
+					Price:       fmt.Sprintf("%v", params.ClosePrice),
 					Category:    "spot",
 					TimeInForce: "GTC",
 					OrderLinkId: fmt.Sprintf("%d-%v", params.Operation, timestamp),
