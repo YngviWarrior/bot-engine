@@ -55,11 +55,11 @@ func (j *job) SyncKlines() {
 			mts, _ := strconv.Atoi(kline[0])
 			c.Mts = uint64(mts)
 
-			c.Open, _ = strconv.ParseFloat(kline[1], 64)
-			c.Close, _ = strconv.ParseFloat(kline[4], 64)
-			c.High, _ = strconv.ParseFloat(kline[2], 64)
-			c.Low, _ = strconv.ParseFloat(kline[3], 64)
-			c.Volume, _ = strconv.ParseFloat(kline[5], 64)
+			c.Open = kline[1]
+			c.Close = kline[4]
+			c.High = kline[2]
+			c.Low = kline[3]
+			c.Volume = kline[5]
 
 			create.Candles = append(create.Candles, &c)
 		}

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
-	"github.com/YngviWarrior/bot-engine/utils"
 	bybitSDK "github.com/YngviWarrior/bybit-sdk"
 )
 
@@ -24,7 +23,7 @@ func (j *job) SyncAssets(loopChannel *chan bool) {
 	if len(walletCoinList.GetWallet()) == 0 {
 		for _, coin := range coins.GetCoin() {
 			newWallet := j.ExchangeMS.CreateWallet(&pb.CreateWalletRequest{
-				Amount:   0,
+				Amount:   "0",
 				Exchange: 2,
 				Coin:     coin.GetCoin(),
 			})
@@ -53,7 +52,7 @@ func (j *job) SyncAssets(loopChannel *chan bool) {
 					Wallet:   walletCoin.GetWallet(),
 					Exchange: walletCoin.GetExchange(),
 					Coin:     walletCoin.GetCoin(),
-					Amount:   utils.ParseFloat(bybitWallet.WalletBalance),
+					Amount:   bybitWallet.WalletBalance,
 				})
 			}
 		}

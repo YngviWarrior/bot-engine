@@ -1,6 +1,9 @@
 package job
 
 import (
+	"fmt"
+	"log"
+	"strconv"
 	"time"
 
 	"github.com/YngviWarrior/bot-engine/infra/external/proto/pb"
@@ -16,7 +19,7 @@ func safeSet(m map[uint64]map[uint64]map[string]float64, exchange, parity uint64
 	m[exchange][parity][key] = value
 }
 
-func (j *job) CalculateAveragePrices(loopChannel *chan bool) {
+func (j *job) CalculateAveragePrices_OLD(loopChannel *chan bool) {
 	updateMapping := make(map[uint64]map[uint64]map[string]float64)
 
 	to := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), time.Now().Second(), time.Now().Nanosecond(), time.Local)
@@ -39,11 +42,22 @@ func (j *job) CalculateAveragePrices(loopChannel *chan bool) {
 		})
 
 		var dayRoc float64
-		if (dayAvg != &pb.GetFirstPriceResponse{}) || (currentPrice.GetPrice() != 0) {
-			dayRoc = (currentPrice.GetPrice()/dayAvg.GetPrice() - 1) * 100
+		var dayAvgPrice float64
+		if (dayAvg != &pb.GetFirstPriceResponse{}) || (currentPrice.GetPrice() != "0") {
+			currentPrice, err := strconv.ParseFloat(currentPrice.GetPrice(), 64)
+			if err != nil {
+				log.Panic("CAP 01: ", err)
+			}
+
+			dayAvgPrice, err = strconv.ParseFloat(dayAvg.GetPrice(), 64)
+			if err != nil {
+				log.Panic("CAP 02: ", err)
+			}
+
+			dayRoc = (currentPrice/dayAvgPrice - 1) * 100
 		}
 
-		safeSet(updateMapping, parityInfo.Exchange, parityInfo.Parity, "day_avg", dayAvg.GetPrice())
+		safeSet(updateMapping, parityInfo.Exchange, parityInfo.Parity, "day_avg", dayAvgPrice)
 		safeSet(updateMapping, parityInfo.Exchange, parityInfo.Parity, "day_roc", dayRoc)
 	}
 
@@ -67,11 +81,21 @@ func (j *job) CalculateAveragePrices(loopChannel *chan bool) {
 		})
 
 		var weekRoc float64
-		if (weekAvg != &pb.GetFirstPriceResponse{}) || (currentPrice.GetPrice() != 0) {
-			weekRoc = (currentPrice.GetPrice()/weekAvg.GetPrice() - 1) * 100
+		var weekAvgPrice float64
+		if (weekAvg != &pb.GetFirstPriceResponse{}) || (currentPrice.GetPrice() != "0") {
+			currentPrice, err := strconv.ParseFloat(currentPrice.GetPrice(), 64)
+			if err != nil {
+				log.Panic("CAP 03: ", err)
+			}
+
+			weekAvgPrice, err = strconv.ParseFloat(weekAvg.GetPrice(), 64)
+			if err != nil {
+				log.Panic("CAP 04: ", err)
+			}
+			weekRoc = (currentPrice/weekAvgPrice - 1) * 100
 		}
 
-		safeSet(updateMapping, parityInfo.Exchange, parityInfo.Parity, "week_avg", weekAvg.GetPrice())
+		safeSet(updateMapping, parityInfo.Exchange, parityInfo.Parity, "week_avg", weekAvgPrice)
 		safeSet(updateMapping, parityInfo.Exchange, parityInfo.Parity, "week_roc", weekRoc)
 	}
 
@@ -95,31 +119,41 @@ func (j *job) CalculateAveragePrices(loopChannel *chan bool) {
 		})
 
 		var monthRoc float64
-		if (monthAvg != &pb.GetFirstPriceResponse{}) || (currentPrice.GetPrice() != 0) {
-			monthRoc = (currentPrice.GetPrice()/monthAvg.GetPrice() - 1) * 100
+		var monthAvgPrice float64
+		if (monthAvg != &pb.GetFirstPriceResponse{}) || (currentPrice.GetPrice() != "0") {
+			currentPrice, err := strconv.ParseFloat(currentPrice.GetPrice(), 64)
+			if err != nil {
+				log.Panic("CAP 03: ", err)
+			}
+
+			monthAvgPrice, err = strconv.ParseFloat(monthAvg.GetPrice(), 64)
+			if err != nil {
+				log.Panic("CAP 04: ", err)
+			}
+			monthRoc = (currentPrice/monthAvgPrice - 1) * 100
 		}
 
-		safeSet(updateMapping, parityInfo.Exchange, parityInfo.Parity, "month_avg", monthAvg.GetPrice())
+		safeSet(updateMapping, parityInfo.Exchange, parityInfo.Parity, "month_avg", monthAvgPrice)
 		safeSet(updateMapping, parityInfo.Exchange, parityInfo.Parity, "month_roc", monthRoc)
 	}
 
 	for exchange, parities := range updateMapping {
-		var dayAverage, dayRoc, weekAverage, weekRoc, monthAverage, monthRoc float64
+		var dayAverage, dayRoc, weekAverage, weekRoc, monthAverage, monthRoc string
 		for parity, values := range parities {
 			for key, value := range values {
 				switch key {
 				case "day_avg":
-					dayAverage = value
+					dayAverage = fmt.Sprintf("%.2f", value)
 				case "week_avg":
-					weekAverage = value
+					weekAverage = fmt.Sprintf("%.2f", value)
 				case "month_avg":
-					monthAverage = value
+					monthAverage = fmt.Sprintf("%.2f", value)
 				case "day_roc":
-					dayRoc = value
+					dayRoc = fmt.Sprintf("%.2f", value)
 				case "week_roc":
-					weekRoc = value
+					weekRoc = fmt.Sprintf("%.2f", value)
 				case "month_roc":
-					monthRoc = value
+					monthRoc = fmt.Sprintf("%.2f", value)
 				}
 			}
 
